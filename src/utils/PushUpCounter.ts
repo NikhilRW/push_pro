@@ -1,55 +1,83 @@
 import { Alert } from 'react-native';
-import { MIN_MOVEMENT_RANGE, PATTERN_CONFIDENCE_THRESHOLD } from '../constants';
+import {
+  motivationalMessages,
+  PATTERN_CONFIDENCE_THRESHOLD,
+} from '../constants';
 import RNFS from 'react-native-fs';
-import { ELEVENLABS_API_KEY, VOICE_ID1 } from '@env';
-import React from 'react';
+import { ELEVENLABS_API_KEY } from '@env';
 import Sound from 'react-native-sound';
 import { Buffer } from 'buffer';
-import { getVoiceFile } from '../../legacy/Voice';
 import { ToWords } from 'to-words';
 const toWords = new ToWords();
 
-// Track reference position for push-up starting point
+// PERFORMANCE OPTIMIZED: Pre-allocated arrays and variables
 let referenceY: number | null = null;
 let lastValidPushupTime = 0;
 
-export // Function to analyze buffer for pushup pattern (pure worklet function)
-const analyzeBufferPattern = (
+// Pre-allocated arrays to avoid garbage collection
+const tempYValues: number[] = new Array(25);
+const tempFaceDetected: boolean[] = new Array(25);
+
+// PERFORMANCE OPTIMIZED: Ultra-fast pattern analysis
+export const analyzeBufferPattern = (
   buffer: Array<{ y: number; timestamp: number; faceDetected: boolean }>,
+  _videoHeight: number,
 ) => {
   'worklet';
 
-  if (buffer.length < 15)
+  // Early exit for insufficient data
+  if (buffer.length < 12) {
     return { found: false, confidence: 0, pattern: 'insufficient_data' };
-
-  // Separate face detected and face gone periods
-  const faceDetectedEntries = buffer.filter(item => item.faceDetected);
-  const faceGoneEntries = buffer.filter(item => !item.faceDetected);
-
-  // Calculate velocities between consecutive frames
-  const velocities = [];
-  for (let i = 1; i < faceDetectedEntries.length; i++) {
-    const deltaY = faceDetectedEntries[i].y - faceDetectedEntries[i - 1].y;
-    const deltaTime =
-      faceDetectedEntries[i].timestamp - faceDetectedEntries[i - 1].timestamp;
-    velocities.push(deltaY / deltaTime); // pixels per millisecond
   }
 
-  // Need some face detection data
-  if (faceDetectedEntries.length < 6) {
-    // Reduced minimum required frames
-    referenceY = null; // Reset reference when insufficient data
+  const bufferLength = buffer.length;
+
+  // PERFORMANCE: Single pass through buffer to collect data
+  let faceDetectedCount = 0;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let lastFaceY = 0;
+  let firstFaceY = 0;
+  let lastFaceTime = 0;
+  let faceGoneCount = 0;
+
+  // Single pass optimization - collect all data in one loop
+  for (let i = 0; i < bufferLength; i++) {
+    const item = buffer[i];
+
+    if (item.faceDetected) {
+      if (faceDetectedCount === 0) {
+        firstFaceY = item.y;
+      }
+
+      lastFaceY = item.y;
+      lastFaceTime = item.timestamp;
+
+      // Track min/max in single pass
+      if (item.y < minY) minY = item.y;
+      if (item.y > maxY) maxY = item.y;
+
+      faceDetectedCount++;
+
+      // Store for velocity calculation
+      tempYValues[faceDetectedCount - 1] = item.y;
+      tempFaceDetected[faceDetectedCount - 1] = true;
+    } else {
+      faceGoneCount++;
+    }
+  }
+
+  // Early exit if insufficient face data
+  if (faceDetectedCount < 5) {
+    referenceY = null;
     return { found: false, confidence: 0, pattern: 'insufficient_face_data' };
   }
 
-  // Get Y values for analysis (only from detected faces)
-  const yValues = faceDetectedEntries.map(item => item.y);
-  const minY = Math.min(...yValues);
-  const maxY = Math.max(...yValues);
+  // Calculate range
   const range = maxY - minY;
 
-  // Need sufficient movement range
-  if (range < MIN_MOVEMENT_RANGE) {
+  // Early exit for insufficient movement
+  if (range < 50) {
     return {
       found: false,
       confidence: 0,
@@ -60,139 +88,88 @@ const analyzeBufferPattern = (
     };
   }
 
-  // Analyze the complete buffer timeline for pattern: face_visible → face_up → face_gone → face_reappears
-  const bufferLength = buffer.length;
-  const firstQuarter = buffer.slice(0, Math.floor(bufferLength / 4));
-  const secondQuarter = buffer.slice(
-    Math.floor(bufferLength / 4),
-    Math.floor(bufferLength / 2),
-  );
-  const thirdQuarter = buffer.slice(
-    Math.floor(bufferLength / 2),
-    Math.floor((3 * bufferLength) / 4),
-  );
-  const fourthQuarter = buffer.slice(Math.floor((3 * bufferLength) / 4));
+  // CRITICAL: Check if face was undetected at least once (indicating person went down)
+  console.log(faceGoneCount);
+  if (faceGoneCount <= 8) {
+    return {
+      found: false,
+      confidence: 0,
+      pattern: 'no_face_gone_phase',
+      minY,
+      maxY,
+      range,
+      faceGoneCount,
+    };
+  }
 
-  // Calculate average Y for each quarter (only for detected faces)
-  const getQuarterAvgY = (
-    quarter: Array<{ y: number; timestamp: number; faceDetected: boolean }>,
-  ) => {
-    const detectedFaces = quarter.filter(item => item.faceDetected);
-    if (detectedFaces.length === 0) return null;
-    return (
-      detectedFaces.reduce((sum, item) => sum + item.y, 0) /
-      detectedFaces.length
-    );
-  };
+  // PERFORMANCE: Optimized velocity calculation (only if needed)
+  let velocityStable = true;
+  let recentVelocity = 0;
 
-  const getFaceDetectionRatio = (
-    quarter: Array<{ y: number; timestamp: number; faceDetected: boolean }>,
-  ) => {
-    return quarter.filter(item => item.faceDetected).length / quarter.length;
-  };
+  if (faceDetectedCount > 1) {
+    // Calculate only recent velocities for stability check
+    const recentCount = Math.min(3, faceDetectedCount - 1);
+    let velocitySum = 0;
 
-  const q1AvgY = getQuarterAvgY(firstQuarter);
-  const q2AvgY = getQuarterAvgY(secondQuarter);
-  const q3AvgY = getQuarterAvgY(thirdQuarter);
-  const q4AvgY = getQuarterAvgY(fourthQuarter);
+    for (let i = faceDetectedCount - recentCount; i < faceDetectedCount; i++) {
+      const deltaY = tempYValues[i] - tempYValues[i - 1];
+      const deltaTime = buffer[i].timestamp - buffer[i - 1].timestamp;
+      const velocity = deltaY / deltaTime;
+      velocitySum += Math.abs(velocity);
+    }
 
-  const q1FaceRatio = getFaceDetectionRatio(firstQuarter);
-  const q2FaceRatio = getFaceDetectionRatio(secondQuarter);
-  const q3FaceRatio = getFaceDetectionRatio(thirdQuarter);
-  const q4FaceRatio = getFaceDetectionRatio(fourthQuarter);
+    recentVelocity = velocitySum / recentCount;
+    velocityStable = recentVelocity < 0.1; // Threshold for stability
+  }
+
+  // PERFORMANCE: Simplified pattern detection
+  const faceGoneRatio = faceGoneCount / bufferLength;
+  const hasFaceGonePhase = faceGoneRatio > 0.1; // Reduced to 10% - just need some face gone frames
+
+  // Calculate movement patterns
+  const upwardMovement = firstFaceY - minY; // Face goes up (Y decreases)
+  const returnMovement = Math.abs(lastFaceY - firstFaceY);
 
   let confidence = 0;
   let patternType = 'none';
 
-  // Look for pushup pattern:
-  // Q1: Face visible (center)
-  // Q2: Face moves up (Y decreases)
-  // Q3: Face gone (down phase) - low face detection ratio
-  // Q4: Face returns (Y increases back to center)
-
-  if (q1AvgY !== null && q2AvgY !== null && q4AvgY !== null) {
-    // Check for face disappearance in middle quarters
-    const hasFaceGonePhase = q2FaceRatio < 0.5 || q3FaceRatio < 0.5;
-
-    if (hasFaceGonePhase && q1FaceRatio > 0.7 && q4FaceRatio > 0.7) {
-      // Pattern: visible → up/gone → reappears
-      const upwardMovement = q1AvgY - q2AvgY; // Face goes UP (Y decreases)
-      const returnMovement = Math.abs(q4AvgY - q1AvgY); // Face returns to similar position
-
-      // Check if face went up and then returned
-      if (upwardMovement > 10 && returnMovement < 30) {
-        // Return should be close to start
-        confidence = Math.min(
-          0.95,
-          (upwardMovement + (hasFaceGonePhase ? 20 : 0)) / 50,
-        );
-        patternType = 'up_gone_return';
-        console.log(
-          `Pushup pattern: Up movement: ${upwardMovement.toFixed(
-            1,
-          )}px, Face gone phase: ${hasFaceGonePhase}, Return diff: ${returnMovement.toFixed(
-            1,
-          )}px`,
-        );
-      }
-    }
-
-    // Also check for simple up-down pattern without face loss
-    else if (
-      q1AvgY !== null &&
-      q2AvgY !== null &&
-      q3AvgY !== null &&
-      q4AvgY !== null
-    ) {
-      if (q1AvgY > q2AvgY && q2AvgY < q3AvgY && q3AvgY > q4AvgY) {
-        const upwardMovement = q1AvgY - q2AvgY; // Face goes UP (Y decreases)
-        const downwardMovement = q3AvgY - q4AvgY; // Face comes DOWN (Y increases)
-
-        if (upwardMovement > 15 && downwardMovement > 15) {
-          confidence = Math.min(0.9, (upwardMovement + downwardMovement) / 60);
-          patternType = 'up_down_up';
-          console.log(
-            `Simple pattern: Up movement: ${upwardMovement.toFixed(
-              1,
-            )}px, Down movement: ${downwardMovement.toFixed(1)}px`,
-          );
-        }
-      }
+  // CRITICAL: Only count pushups when face was gone (person went down)
+  if (faceDetectedCount >= 6) {
+    // Pattern: face visible → up → gone → returns
+    if (upwardMovement > 15 && returnMovement < 25) {
+      confidence = Math.min(
+        0.95,
+        (upwardMovement + (hasFaceGonePhase ? 20 : 0)) / 40,
+      );
+      patternType = 'up_gone_return';
     }
   }
 
-  // Update or establish reference position with velocity validation
-  const currentY = faceDetectedEntries[faceDetectedEntries.length - 1].y;
-  const currentTime =
-    faceDetectedEntries[faceDetectedEntries.length - 1].timestamp;
+  // REMOVED: Simple up-down pattern without face gone phase
+  // This prevents counting head movements as pushups
 
-  // Calculate velocity stability
-  const recentVelocities = velocities.slice(-3);
-  const isStable = recentVelocities.every(v => Math.abs(v) < 0.05); // Less than 0.05 pixels/ms
+  // PERFORMANCE: Optimized reference position management
+  const currentY = lastFaceY;
+  const currentTime = lastFaceTime;
 
-  // Initialize reference position if not set
+  // Initialize reference if needed
   if (referenceY === null && confidence < PATTERN_CONFIDENCE_THRESHOLD) {
-    if (q1FaceRatio > 0.8 && isStable) {
-      // Reduced face ratio requirement
+    if (faceDetectedCount >= 5 && velocityStable) {
       referenceY = currentY;
       return { found: false, confidence: 0, pattern: 'reference_set' };
     }
   }
 
-  // Validate against reference position with velocity consideration
+  // Validate against reference position
   if (referenceY !== null && confidence >= PATTERN_CONFIDENCE_THRESHOLD) {
-    const returnToStart = Math.abs(currentY - referenceY) < 25; // Increased tolerance
-    const sufficientTimePassed = currentTime - lastValidPushupTime > 800; // Reduced to 0.8s
+    const returnToStart = Math.abs(currentY - referenceY) < 30;
+    const sufficientTimePassed = currentTime - lastValidPushupTime > 150; // Reduced to 150ms
 
-    // Check if movement has stabilized
-    const hasStabilized =
-      isStable || Math.abs(velocities[velocities.length - 1]) < 0.1;
-
-    if (returnToStart && sufficientTimePassed && hasStabilized) {
+    if (returnToStart && sufficientTimePassed) {
       lastValidPushupTime = currentTime;
       return {
         found: true,
-        confidence: confidence * (isStable ? 1.1 : 1.0), // Boost confidence for stable form
+        confidence: confidence * (velocityStable ? 1.1 : 1.0),
         pattern: patternType,
         minY,
         maxY,
@@ -215,20 +192,43 @@ const analyzeBufferPattern = (
     minY,
     maxY,
     range,
-    faceGoneRatio: faceGoneEntries.length / buffer.length,
-    quarters: { q1FaceRatio, q2FaceRatio, q3FaceRatio, q4FaceRatio },
+    faceGoneRatio,
   };
 };
 
 export const speakUsingElevenLabs = (
-  setIsSpeaking: React.Dispatch<React.SetStateAction<boolean>>,
   count: number,
-) => {
+  whenLastMessageIncluded: React.RefObject<{
+    lastCount: number;
+  }>,
+  isMotivationPlaying: boolean,
+): (() => Promise<{ sound: Sound; motivation: boolean } | null>) => {
+  // This function returns a Promise that resolves to either an object with sound and motivation, or null.
+  // It should never return 'void' to match the expected type.
   return async () => {
-    if (!VOICE_ID1) return Alert.alert('Error', 'Voice ID is missing');
-    setIsSpeaking(true);
+    const differenceInCount = count - whenLastMessageIncluded.current.lastCount;
+    const isMessageShouldBeIncluded =
+      differenceInCount >= 5 && differenceInCount <= 10;
     try {
-      if (count > 25) {
+      if (count > 40) {
+        let message = '';
+        let isMotivation = false;
+        if (
+          (isMessageShouldBeIncluded &&
+            Math.floor(Math.random() * 10 + 5) === differenceInCount) ||
+          differenceInCount === 10
+        ) {
+          whenLastMessageIncluded.current.lastCount = count;
+          message =
+            `${toWords.convert(count)} ` +
+            motivationalMessages[
+              Math.floor(Math.random() * motivationalMessages.length)
+            ];
+          isMotivation = true;
+        } else {
+          message = `${toWords.convert(count)}`;
+          isMotivation = false;
+        }
         const response = await fetch(
           `https://api.elevenlabs.io//v1/text-to-speech/ZthjuvLPty3kTMaNKVKb?output_format=mp3_44100_128`,
           {
@@ -239,7 +239,7 @@ export const speakUsingElevenLabs = (
               'xi-api-key': ELEVENLABS_API_KEY,
             },
             body: JSON.stringify({
-              text: `${toWords.convert(count)}`,
+              text: message,
               model_id: 'eleven_multilingual_v2',
               voice_settings: {
                 stability: 0.5,
@@ -250,30 +250,59 @@ export const speakUsingElevenLabs = (
         );
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        const path = RNFS.DownloadDirectoryPath + '/tts_audio.mp3';
+        const path = RNFS.DocumentDirectoryPath + '/tts_audio.mp3';
+        const dirPath = RNFS.DocumentDirectoryPath;
+        const dirExists = await RNFS.exists(dirPath);
+        if (!dirExists) {
+          await RNFS.mkdir(dirPath);
+        }
         await RNFS.writeFile(path, buffer.toString('base64'), 'base64');
         const sound = new Sound(path, '', error => {
           if (error) {
             console.log('Failed to load the sound', error);
             return;
           }
-          sound.play();
-        });
-      } else {
-        const sound = new Sound('audio' + count, Sound.MAIN_BUNDLE, error => {
-          if (error) {
-            console.log('Failed to load the sound', error);
-            return;
+          if (!isMotivationPlaying) {
+            sound.play();
           }
-          sound.play();
         });
+        return { sound: sound, motivation: isMotivation };
+      } else {
+        if (
+          (isMessageShouldBeIncluded &&
+            Math.floor(Math.random() * 5 + 1) === differenceInCount) ||
+          differenceInCount === 5
+        ) {
+          whenLastMessageIncluded.current.lastCount = count;
+          const newSound = new Sound(
+            'message' + Math.floor(Math.random() * motivationalMessages.length),
+            Sound.MAIN_BUNDLE,
+            error_2 => {
+              if (error_2) {
+                console.log('Failed to load the sound', error_2);
+                return;
+              }
+              newSound.play();
+            },
+          );
+          return { sound: newSound, motivation: true };
+        } else {
+          const sound = new Sound('audio' + count, Sound.MAIN_BUNDLE, error => {
+            if (error) {
+              console.log('Failed to load the sound', error);
+              return;
+            }
+            if (!isMotivationPlaying) {
+              sound.play();
+            }
+          });
+          return { sound: sound, motivation: false };
+        }
       }
     } catch (err) {
       console.error('TTS speakText error', err);
-
       Alert.alert('Error', 'Something went wrong during TTS');
-    } finally {
-      setIsSpeaking(false);
+      return null;
     }
   };
 };
@@ -314,6 +343,8 @@ export const getPatternColor = (pattern: string) => {
       return '#4CAF50'; // Green - face gone pattern (most accurate)
     case 'up_down_up':
       return '#8BC34A'; // Light green - simple up-down pattern
+    case 'no_face_gone_phase':
+      return '#FF5722'; // Deep orange - need face gone phase
     case 'insufficient_range':
       return '#FF9800'; // Orange - not enough movement
     case 'insufficient_data':
@@ -336,6 +367,8 @@ export const getPatternText = (pattern: string) => {
       return 'Up→Gone→Return';
     case 'up_down_up':
       return 'Up→Down→Up';
+    case 'no_face_gone_phase':
+      return 'Need Face Gone Phase';
     case 'insufficient_range':
       return 'Small Movement';
     case 'insufficient_data':
@@ -369,16 +402,6 @@ export function _base64ToArrayBuffer(base64: string) {
   return bytes.buffer;
 }
 
-const VOICE_CACHE = new Map();
-export async function getVoiceData(voice: string) {
-  if (VOICE_CACHE.has(voice)) {
-    return VOICE_CACHE.get(voice);
-  }
-
-  const buffer = new Float32Array(await getVoiceFile(voice));
-  VOICE_CACHE.set(voice, buffer);
-  return buffer;
-}
 export const newGetStateColor = (currentSta: string) => {
   switch (currentSta) {
     case 'ready':

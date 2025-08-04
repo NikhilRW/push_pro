@@ -18,4 +18,5 @@ export type usePushupFrameProcessorParamsType = {
   updateBufferInfo: (info: any) => Promise<void>;
   incrementCount: () => Promise<void>;
   resetStateToReady: () => Promise<void>;
+  videoHeight:number;
 };

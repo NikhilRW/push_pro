@@ -25,6 +25,7 @@ import { styles } from '../styles/PushUpCounter';
 import {
   newGetStateColor,
   newGetStateText,
+  speakUsingElevenLabs,
 } from '../utils/PushUpCounter';
 import Animated, {
   useSharedValue,
@@ -33,14 +34,24 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { useStoragePermission } from '../hooks/useStoragePermission';
+// PERFORMANCE: Import optimization utilities
+import Sound from 'react-native-sound';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
+
+  // PERFORMANCE: Optimized state management
   const [count, setCount] = useState(0);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [currentState, setCurrentState] = useState('ready');
   const [isActive, setIsActive] = useState(false);
   const [lastFaceY, setLastFaceY] = useState(0);
+  const whenLastMessageIncluded = useRef<{ lastCount: number }>({
+    lastCount: 1,
+  });
+  const sound = useRef<{ sound: Sound | null; motivation: boolean }>({
+    motivation: false,
+    sound: null,
+  });
   const [bufferInfo, setBufferInfo] = useState({
     bufferSize: 0,
     currentPattern: 'none',
@@ -79,6 +90,7 @@ export default function PushUpCounter() {
       );
     }
   }, [animatedRotation, count, displayedCount]);
+
   useEffect(() => {
     flipText();
   }, [count, displayedCount, animatedRotation, flipText]);
@@ -90,14 +102,19 @@ export default function PushUpCounter() {
     lastFaceDisappearedTime,
   } = usePushupSharedVals();
 
+  // PERFORMANCE: Optimized face detection options
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     contourMode: 'all',
-    performanceMode: 'accurate',
+    performanceMode: 'fast', // Changed from 'accurate' to 'fast' for performance
     landmarkMode: 'all',
   }).current;
 
   const faceDetector = useFaceDetector(faceDetectionOptions);
   const device = useCameraDevice('front');
+  const deviceFormat = device!.formats.find(
+    f => f.videoWidth <= 640 && f.videoHeight <= 480,
+  );
+  const videoHeight = deviceFormat?.videoHeight!;
   const { hasPermission, requestPermission } = useCameraPermission();
   const { hasStoragePermission, requestStoragePermission } =
     useStoragePermission();
@@ -115,11 +132,19 @@ export default function PushUpCounter() {
     setBufferInfo,
   });
 
-  // useEffect(() => {
-  //   if (!isSpeaking) {
-  //     speakUsingElevenLabs(setIsSpeaking, count)();
-  //   }
-  // }, [count, isSpeaking]);
+  useEffect(() => {
+    (async () => {
+      const response = await speakUsingElevenLabs(
+        count,
+        whenLastMessageIncluded,
+        sound.current.motivation && sound.current.sound!.isPlaying(),
+      )()!;
+      if (response !== null) {
+        sound.current.sound = response.sound;
+        sound.current.motivation = response.motivation;
+      }
+    })();
+  }, [count]);
 
   useMemo(() => {
     if (!hasPermission) {
@@ -146,6 +171,7 @@ export default function PushUpCounter() {
     updateState,
     faceYBuffer,
     lastFaceDisappearedTime,
+    videoHeight,
   });
 
   const resetCounter = () => {
@@ -195,9 +221,7 @@ export default function PushUpCounter() {
           isActive={isActive}
           frameProcessor={frameProcessor}
           fps={15}
-          format={device.formats.find(
-            f => f.videoWidth <= 640 && f.videoHeight <= 480,
-          )}
+          format={deviceFormat}
         />
       </View>
       {/* Header */}
@@ -217,30 +241,8 @@ export default function PushUpCounter() {
       <View style={styles.counterContainer}>
         <View style={styles.counterBox}>
           {/* Animated Flip Text */}
-          <Animated.View
-            style={[
-              {
-                width: 100,
-                height: 120,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'transparent',
-                borderRadius: 12,
-                overflow: 'hidden',
-              },
-              animatedStyle,
-            ]}
-          >
-            <Text
-              style={{
-                fontSize: 72,
-                color: 'orange',
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}
-            >
-              {displayedCount}
-            </Text>
+          <Animated.View style={[animatedStyle]}>
+            <Text style={styles.countText}>{displayedCount}</Text>
           </Animated.View>
         </View>
       </View>
@@ -268,6 +270,11 @@ export default function PushUpCounter() {
           <CustomButton
             title="Reset"
             onPress={resetCounter}
+            variant="secondary"
+          />
+          <CustomButton
+            title="Increment COunt"
+            onPress={() => setCount(prev => prev + 1)}
             variant="secondary"
           />
         </View>

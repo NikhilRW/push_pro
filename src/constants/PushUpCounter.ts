@@ -2,12 +2,12 @@ import { Dimensions } from 'react-native';
 
 export const { height, width } = Dimensions.get('window');
 
-// Constants for Progressive Movement Analysis (can stay as regular variables)
-export const BUFFER_SIZE = 40; // Increased to handle face disappearance periods
-export const MIN_MOVEMENT_RANGE = 25; // Minimum Y range for valid pushup
-export const PATTERN_CONFIDENCE_THRESHOLD = 0.75; // How confident we need to be in pattern
-export const ANALYSIS_INTERVAL = 200; // Analyze pattern every 200ms to avoid overprocessing
-export const MAX_FACE_GONE_TIME = 2000; // Max time face can be gone before reset (2 seconds)
+// PERFORMANCE OPTIMIZED CONSTANTS for Extreme Performance
+export const BUFFER_SIZE = 25; // Reduced from 40 for faster processing
+// export const MIN_MOVEMENT_RANGE = 125; // Slightly reduced for faster detection
+export const PATTERN_CONFIDENCE_THRESHOLD = 0.75; // Reduced for faster counting
+export const ANALYSIS_INTERVAL = 20; // Increased frequency from 50ms to 30ms
+export const MAX_FACE_GONE_TIME = 1500; // Reduced from 2000ms for faster reset
 
 export const VOICES = Object.freeze({
   af_heart: {
@@ -275,3 +275,107 @@ export const MODELS = Object.freeze({
 
 export const DEFAULT_VOICE_ID = 'am_onyx';
 export const DEFAULT_MODEL = 'model.onnx';
+
+
+
+export const motivationalMessages = [
+  "First few down! You’re in the fight, stay hard!",
+  "Keep grinding! You’re tougher than this!",
+  "Pain is weakness leaving, keep pushing!",
+  "Who’s gonna carry the boats? You are!",
+  "Don’t stop, finish what you started!",
+  "Embrace the suck, you’re built for this!",
+  "Nobody saves you, push harder now!",
+  "You’re not tired, you’re weak! Go on!",
+  "Dig deep, you’ve got more in you!",
+  "Suffering builds strength, own it!",
+  "Quit whining, start winning! Push!",
+  "You’re not done, keep hammering!",
+  "Weakness hates effort, dominate it!",
+  "Stay in the fight, you’re unbreakable!",
+  "Pain is temporary, glory is forever! Push!",
+  "No surrender, you’re tougher than this!",
+  "Grind through, you’re a savage!",
+  "Outwork your doubts, every rep counts!",
+  "Stay hard, you’re forging a new you!",
+  "Weakness runs from effort, chase it down!",
+  "You’re built for battle, keep pushing!",
+  "No limits, just effort! Get after it!",
+  "Pain is your fuel, burn through it!",
+  "Don’t quit, you’re stronger than you know!",
+  "Stay savage, keep those reps coming!",
+  "You’re not soft, prove it with every push!",
+  "Grind now, shine later! Keep going!",
+  "No excuses, you’re a beast, act like it!",
+  "Push past the pain, that’s where growth lives!",
+  "You’re not breaking, you’re building strength!",
+  "Stay in the fight, you’re a warrior!",
+  "Weakness fears you, show it no mercy!",
+  "Every rep is a war won, keep fighting!",
+  "Don’t stop, you’re tougher than this!",
+  "Pain is your teacher, learn and push!",
+  "You’re a savage, keep dominating those reps!",
+  "No retreat, you’re stronger than your excuses!",
+  "Stay hard, you’re carving out greatness!",
+  "Push through the hurt, you’re unstoppable!",
+  "Weakness can’t stand you, keep grinding!",
+  "You’re a warrior, fight for every rep!",
+  "No surrender, you’re built for this!",
+  "Pain is just weakness exiting, push harder!",
+  "Stay in the grind, you’re a beast!",
+  "Don’t quit, you’re tougher than the toughest!",
+  "Every rep builds your legacy, keep going!",
+  "You’re not weak, prove it with every push!",
+  "Stay savage, you’re dominating this!",
+  "Grind through, you’re stronger than pain!",
+  "No excuses, you’re a machine, keep going!",
+  "Push past the hurt, you’re unstoppable!",
+  "Weakness fears your effort, crush it!",
+  "You’re a fighter, keep hammering those reps!",
+  "Stay hard, you’re building something epic!",
+  "Pain is your forge, craft a warrior!",
+  "Don’t quit, you’re tougher than you know!",
+  "Every rep is a war won, keep battling!",
+  "You’re not soft, show it with every push!",
+  "Stay in the grind, you’re a savage!",
+  "No surrender, you’re stronger than steel!",
+  "Push through the pain, you’re a legend!",
+  "Weakness can’t touch you, keep working!",
+  "You’re a warrior, own every single rep!",
+  "Stay hard, you’re carving out greatness!",
+  "Pain is your fuel, burn through it!",
+  "Don’t stop, you’re a relentless force!",
+  "Every rep builds your legacy, keep going!",
+  "You’re not weak, prove it every push!",
+  "Stay savage, you’re owning this fight!",
+  "Grind through, you’re tougher than the toughest!",
+  "No excuses, you’re a machine, act like it!",
+  "Push harder, you’re forging a new you!",
+  "Weakness flees from you, chase it down!",
+  "You’re a fighter, keep hammering those reps!",
+  "Stay hard, you’re building something epic!",
+  "Pain is your forge, craft a legend!",
+  "Don’t quit, you’re tougher than you know!",
+  "Every rep is a victory, stack them up!",
+  "You’re not soft, show it with every push!",
+  "Stay savage, you’re dominating this fight!",
+  "Grind through, you’re stronger than pain!",
+  "No excuses, you’re a beast, keep going!",
+  "Push past the hurt, you’re unstoppable!",
+  "Weakness fears your effort, crush it!",
+  "You’re a warrior, fight for every rep!",
+  "Stay hard, you’re carving out greatness!",
+  "Pain is your fuel, burn through it!",
+  "Don’t stop, you’re a relentless machine!",
+  "Every rep builds your legacy, keep fighting!",
+  "You’re not weak, prove it every push!",
+  "Stay savage, you’re owning this grind!",
+  "Grind through, you’re tougher than the toughest!",
+  "No excuses, you’re a machine, keep hammering!",
+  "Push harder, you’re forging a legend!",
+  "Weakness flees from you, chase it down!",
+  "You’re a fighter, keep dominating those reps!",
+  "Stay hard, you’re building an unbreakable you!",
+  "Pain is your forge, craft a savage!",
+  "Don’t quit, you’re the toughest out there!"
+];

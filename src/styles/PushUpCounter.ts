@@ -125,4 +125,19 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
+  countText: {
+    fontSize: 72,
+    color: 'orange',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  countTextView: {
+    width: 100,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
 });

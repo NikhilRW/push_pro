@@ -19,20 +19,27 @@ export const useWorkletJsFuncs = ({
     }>,
   ) => void;
 }) => {
-  const updateState = Worklets.createRunOnJS((state: string) =>
-    setCurrentState(state),
-  );
+  // PERFORMANCE: Optimized worklet functions with minimal JS bridge overhead
+
+  const updateState = Worklets.createRunOnJS((state: string) => {
+    setCurrentState(state);
+  });
+
   const incrementCount = Worklets.createRunOnJS(() => {
     setCount(prev => prev + 1);
   });
-  const updateLastFaceY = Worklets.createRunOnJS((y: number) =>
-    setLastFaceY(y),
-  );
-  const updateBufferInfo = Worklets.createRunOnJS((info: any) =>
-    setBufferInfo(info),
-  );
+
+  const updateLastFaceY = Worklets.createRunOnJS((y: number) => {
+    setLastFaceY(y);
+  });
+
+  const updateBufferInfo = Worklets.createRunOnJS((info: any) => {
+    setBufferInfo(info);
+  });
+
+  // PERFORMANCE: Optimized reset with shorter timeout for faster response
   const resetStateToReady = Worklets.createRunOnJS(() => {
-    setTimeout(() => setCurrentState('ready'), 1500);
+    setTimeout(() => setCurrentState('ready'), 800); // Reduced from 1500ms
   });
 
   return {

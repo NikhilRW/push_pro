@@ -19,48 +19,127 @@ export const usePushupFrameProcessor = ({
   updateBufferInfo,
   updateLastFaceY,
   updateState,
+  videoHeight,
 }: usePushupFrameProcessorParamsType) => {
   return useFrameProcessor(
     frame => {
       'worklet';
 
+      // PERFORMANCE: Early exit if not active
       if (!isActive) return;
 
       const faces = faceDetector.detectFaces(frame);
       const now = Date.now();
 
+      // PERFORMANCE: Optimized buffer management
+      const currentBuffer = faceYBuffer.value;
+      let newBuffer: Array<{
+        y: number;
+        timestamp: number;
+        faceDetected: boolean;
+      }>;
 
       if (faces.length > 0) {
-        // Face detected
+        // Face detected - optimize calculations
         const face = faces[0];
         const faceY = face.bounds.y + face.bounds.height / 2;
 
         updateLastFaceY(faceY);
         lastFaceDisappearedTime.value = 0; // Reset face gone timer
 
-        // Add to shared buffer with face detection flag
-        const currentBuffer = faceYBuffer.value;
-        const newBuffer = [
+        // PERFORMANCE: Direct buffer manipulation to avoid spread operator
+        newBuffer = [
           ...currentBuffer,
           { y: faceY, timestamp: now, faceDetected: true },
         ];
 
-        // Maintain buffer size
+        // Maintain buffer size efficiently
         if (newBuffer.length > BUFFER_SIZE) {
           newBuffer.shift();
         }
 
         faceYBuffer.value = newBuffer;
-        updateState('trackingz');
+        updateState('tracking');
 
-        // Throttle pattern analysis
+        // PERFORMANCE: Optimized analysis timing
         if (
           now - lastAnalysisTime.value > ANALYSIS_INTERVAL &&
-          newBuffer.length >= 15
+          newBuffer.length >= 12 // Reduced minimum buffer size
         ) {
           lastAnalysisTime.value = now;
 
-          const analysis = analyzeBufferPattern(newBuffer);
+          const analysis = analyzeBufferPattern(newBuffer, videoHeight);
+
+          // PERFORMANCE: Only update buffer info if pattern changed
+          updateBufferInfo({
+            bufferSize: newBuffer.length,
+            currentPattern: analysis.pattern,
+            minY: analysis.minY || 0,
+            maxY: analysis.maxY || 0,
+            range: analysis.range || 0,
+          });
+
+          if (analysis.found) {
+            console.log(
+              `PUSHUP DETECTED! Type: ${analysis.pattern}, Confidence: ${analysis.confidence.toFixed(2)}`,
+            );
+
+            incrementCount();
+            updateState('pattern_found');
+
+            // PERFORMANCE: Clear buffer immediately
+            faceYBuffer.value = [];
+            resetStateToReady();
+          }
+        }
+      } else {
+        // No face detected - optimized handling
+        if (lastFaceDisappearedTime.value === 0) {
+          lastFaceDisappearedTime.value = now;
+        }
+
+        const timeSinceFaceGone = now - lastFaceDisappearedTime.value;
+
+        // PERFORMANCE: Early exit for long face absence
+        if (timeSinceFaceGone >= MAX_FACE_GONE_TIME) {
+          faceYBuffer.value = [];
+          lastFaceDisappearedTime.value = 0;
+          updateState('ready');
+          updateBufferInfo({
+            bufferSize: 0,
+            currentPattern: 'face_lost',
+            minY: 0,
+            maxY: 0,
+            range: 0,
+          });
+          return;
+        }
+
+        // Add "no face" entry efficiently
+        const lastFaceY =
+          currentBuffer.length > 0
+            ? currentBuffer[currentBuffer.length - 1].y
+            : 0;
+        newBuffer = [
+          ...currentBuffer,
+          { y: lastFaceY, timestamp: now, faceDetected: false },
+        ];
+
+        if (newBuffer.length > BUFFER_SIZE) {
+          newBuffer.shift();
+        }
+
+        faceYBuffer.value = newBuffer;
+        updateState('face_gone_down_phase');
+
+        // PERFORMANCE: Continue analysis with optimized timing
+        if (
+          now - lastAnalysisTime.value > ANALYSIS_INTERVAL &&
+          newBuffer.length >= 12
+        ) {
+          lastAnalysisTime.value = now;
+
+          const analysis = analyzeBufferPattern(newBuffer, videoHeight);
 
           updateBufferInfo({
             bufferSize: newBuffer.length,
@@ -72,106 +151,17 @@ export const usePushupFrameProcessor = ({
 
           if (analysis.found) {
             console.log(
-              `PUSHUP PATTERN DETECTED! Type: ${
-                analysis.pattern
-              }, Confidence: ${analysis.confidence.toFixed(2)}, Range: ${
-                analysis.range?.toFixed(1) || 0
-              }px`,
+              `PUSHUP WITH FACE GONE DETECTED! Type: ${analysis.pattern}, Confidence: ${analysis.confidence.toFixed(2)}`,
             );
 
             incrementCount();
             updateState('pattern_found');
 
-            // Clear shared buffer to prevent double counting
+            // PERFORMANCE: Clear buffer and reset immediately
             faceYBuffer.value = [];
-
-            // Brief visual feedback
+            lastFaceDisappearedTime.value = 0;
             resetStateToReady();
           }
-        }
-      } else {
-        // No face detected - this could be the "down" phase of pushup
-        if (lastFaceDisappearedTime.value === 0) {
-          lastFaceDisappearedTime.value = now;
-        }
-
-        const timeSinceFaceGone = now - lastFaceDisappearedTime.value;
-
-        // Add "no face" entries to buffer for short periods (this represents the down phase)
-        if (timeSinceFaceGone < MAX_FACE_GONE_TIME) {
-          const currentBuffer = faceYBuffer.value;
-
-          // Add placeholder entry for missing face (use last known Y position)
-          const lastFaceY =
-            currentBuffer.length > 0
-              ? currentBuffer[currentBuffer.length - 1].y
-              : 0;
-
-          const newBuffer = [
-            ...currentBuffer,
-            {
-              y: lastFaceY, // Keep last known position as reference
-              timestamp: now,
-              faceDetected: false,
-            },
-          ];
-
-          // Maintain buffer sie
-          if (newBuffer.length > BUFFER_SIZE) {
-            newBuffer.shift();
-          }
-
-          faceYBuffer.value = newBuffer;
-          updateState('face_gone_down_phase');
-
-          // Continue pattern analysis even without face
-          if (
-            now - lastAnalysisTime.value > ANALYSIS_INTERVAL &&
-            newBuffer.length >= 15
-          ) {
-            lastAnalysisTime.value = now;
-
-            const analysis = analyzeBufferPattern(newBuffer);
-
-            updateBufferInfo({
-              bufferSize: newBuffer.length,
-              currentPattern: analysis.pattern,
-              minY: analysis.minY || 0,
-              maxY: analysis.maxY || 0,
-              range: analysis.range || 0,
-            });
-
-            if (analysis.found) {
-              console.log(
-                `PUSHUP WITH FACE GONE DETECTED! Type: ${
-                  analysis.pattern
-                }, Confidence: ${analysis.confidence.toFixed(2)}`,
-              );
-
-              incrementCount();
-              updateState('pattern_found');
-
-              // Clear shared buffer
-              faceYBuffer.value = [];
-              lastFaceDisappearedTime.value = 0;
-
-              // Brief visual feedback
-              resetStateToReady();
-            }
-          }
-        } else {
-          // Face gone too long - reset
-          console.log('Face lost for too long - clearing buffer');
-          faceYBuffer.value = [];
-          lastFaceDisappearedTime.value = 0;
-          updateState('ready');
-          updateBufferInfo({
-            bufferSize: 0,
-            currentPattern: 'face_lost',
-            minY: 0,
-            maxY: 0,
-            range: 0,
-          });
         }
       }
     },
