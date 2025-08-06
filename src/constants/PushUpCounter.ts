@@ -8,6 +8,7 @@ export const BUFFER_SIZE = 25; // Reduced from 40 for faster processing
 export const PATTERN_CONFIDENCE_THRESHOLD = 0.75; // Reduced for faster counting
 export const ANALYSIS_INTERVAL = 20; // Increased frequency from 50ms to 30ms
 export const MAX_FACE_GONE_TIME = 1500; // Reduced from 2000ms for faster reset
+export const FLIP_DURATION = 300;
 
 export const VOICES = Object.freeze({
   af_heart: {

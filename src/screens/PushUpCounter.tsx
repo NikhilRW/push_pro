@@ -10,6 +10,7 @@ import {
   FaceDetectionOptions,
   useFaceDetector,
 } from 'react-native-vision-camera-face-detector';
+
 import {
   Camera,
   useCameraDevice,
@@ -34,20 +35,30 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { useStoragePermission } from '../hooks/useStoragePermission';
-// PERFORMANCE: Import optimization utilities
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import FontAwesome5 from '@react-native-vector-icons/fontawesome5';
+import { Foundation } from '@react-native-vector-icons/foundation';
 import Sound from 'react-native-sound';
+import { FLIP_DURATION, width } from '../constants';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
-
-  // PERFORMANCE: Optimized state management
   const [count, setCount] = useState(0);
   const [currentState, setCurrentState] = useState('ready');
   const [isActive, setIsActive] = useState(false);
   const [lastFaceY, setLastFaceY] = useState(0);
+  const [volume, setVolume] = useState<'mute' | 'high' | 'low'>('low');
+  const volumeIconName =
+    volume === 'high'
+      ? 'volume-up'
+      : volume === 'mute'
+        ? 'volume-off'
+        : 'volume-down';
+
   const whenLastMessageIncluded = useRef<{ lastCount: number }>({
     lastCount: 1,
   });
+  const debugMode = false;
   const sound = useRef<{ sound: Sound | null; motivation: boolean }>({
     motivation: false,
     sound: null,
@@ -61,7 +72,7 @@ export default function PushUpCounter() {
   });
 
   // For animated flip
-  const FLIP_DURATION = 300;
+
   const animatedRotation = useSharedValue(0);
   const [displayedCount, setDisplayedCount] = useState(count);
 
@@ -83,7 +94,6 @@ export default function PushUpCounter() {
         finished => {
           if (finished) {
             runOnJS(setDisplayedCount)(count);
-            // Animate back to 0deg (show new count)
             animatedRotation.value = withTiming(0, { duration: FLIP_DURATION });
           }
         },
@@ -133,18 +143,21 @@ export default function PushUpCounter() {
   });
 
   useEffect(() => {
-    (async () => {
-      const response = await speakUsingElevenLabs(
-        count,
-        whenLastMessageIncluded,
-        sound.current.motivation && sound.current.sound!.isPlaying(),
-      )()!;
-      if (response !== null) {
-        sound.current.sound = response.sound;
-        sound.current.motivation = response.motivation;
-      }
-    })();
-  }, [count]);
+    if (volume !== 'mute') {
+      (async () => {
+        const response = await speakUsingElevenLabs(
+          count,
+          whenLastMessageIncluded,
+          sound.current.motivation && sound.current.sound!.isPlaying(),
+          volume,
+        )()!;
+        if (response !== null) {
+          sound.current.sound = response.sound;
+          sound.current.motivation = response.motivation;
+        }
+      })();
+    }
+  }, [count, volume]);
 
   useMemo(() => {
     if (!hasPermission) {
@@ -191,6 +204,21 @@ export default function PushUpCounter() {
     lastFaceDisappearedTime.value = 0;
   };
 
+  const changeVolume = () => {
+    if (volume === 'high') {
+      setVolume('mute');
+    } else if (volume === 'mute') {
+      setVolume('low');
+    } else {
+      setVolume('high');
+    }
+  };
+
+  // OPTIMIZATION: Stable function reference for toggle button to prevent re-creation
+  const toggleActive = useCallback(() => {
+    setIsActive(prev => !prev);
+  }, []);
+
   if (!device || !hasPermission) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -211,8 +239,10 @@ export default function PushUpCounter() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#111827" />
+    <View style={[styles.container, { paddingTop: insets.top }]}
+      className='dark:bg-neutral-900'
+    >
+      {/* <StatusBar barStyle="light-content" backgroundColor="#111827" /> */}
       {/* Hidden Camera */}
       <View style={styles.hiddenCamera}>
         <Camera
@@ -226,7 +256,7 @@ export default function PushUpCounter() {
       </View>
       {/* Header */}
       <View style={styles.headerBox}>
-        <Text style={styles.headerTitle}>Push-Up Counter</Text>
+        {/* <Text style={styles.headerTitle}>Push-Up Counter</Text> */}
         <View style={styles.stateRow}>
           <View
             style={[
@@ -239,50 +269,65 @@ export default function PushUpCounter() {
       </View>
       {/* Main Counter */}
       <View style={styles.counterContainer}>
-        <View style={styles.counterBox}>
-          {/* Animated Flip Text */}
-          <Animated.View style={[animatedStyle]}>
-            <Text style={styles.countText}>{displayedCount}</Text>
-          </Animated.View>
-        </View>
+        {/* <View style={styles.counterBox}> */}
+        <Animated.View style={[animatedStyle]}>
+          <Text style={styles.countText}>{displayedCount}</Text>
+        </Animated.View>
       </View>
       {/* Status Cards */}
-      <View style={styles.statusRow}>
-        <StatusCard
-          title="Face Position"
-          value={lastFaceY ? lastFaceY.toFixed(0) : '---'}
-          subtitle="Y coordinate"
-        />
-        <StatusCard
-          title="Buffer Size"
-          value={bufferInfo.bufferSize}
-          subtitle={`Range: ${bufferInfo.range.toFixed(0)}`}
-        />
-      </View>
+      {debugMode && (
+        <View style={styles.statusRow}>
+          <StatusCard
+            title="Face Position"
+            value={lastFaceY ? lastFaceY.toFixed(0) : '---'}
+            subtitle="Y coordinate"
+          />
+          <StatusCard
+            title="Buffer Size"
+            value={bufferInfo.bufferSize}
+            subtitle={`Range: ${bufferInfo.range.toFixed(0)}`}
+          />
+        </View>
+      )}
       {/* Control Buttons */}
       <View style={styles.buttonBox}>
         <View style={styles.buttonRow}>
           <CustomButton
-            title={isActive ? 'Stop' : 'Start'}
-            onPress={() => setIsActive(!isActive)}
-            variant={isActive ? 'danger' : 'primary'}
-          />
-          <CustomButton
             title="Reset"
             onPress={resetCounter}
             variant="secondary"
-          />
+          >
+            <Foundation name="refresh" size={width * 0.1} color={'white'} />
+          </CustomButton>
           <CustomButton
-            title="Increment COunt"
-            onPress={() => setCount(prev => prev + 1)}
+            title={isActive ? 'Stop' : 'Start'}
+            onPress={() => toggleActive()}
+            variant={isActive ? 'danger' : 'primary'}
+          >
+            <FontAwesome
+              name={`${isActive ? 'pause' : 'play'}`}
+              color={'white'}
+              size={width * 0.09}
+            />
+          </CustomButton>
+          <CustomButton
+            title="Reset"
+            onPress={changeVolume} //
             variant="secondary"
-          />
+          >
+            <FontAwesome5
+              name={volumeIconName}
+              iconStyle="solid"
+              size={width * 0.09}
+              color={'white'}
+            />
+          </CustomButton>
         </View>
-        <Text style={styles.buttonHint}>
+        {/* <Text style={styles.buttonHint}>
           {isActive
-            ? 'Camera is active and tracking your movements'
-            : 'Press Start to begin tracking your push-ups'}
-        </Text>
+          ? 'Camera is active and tracking your movements'
+          : 'Press Start to begin tracking your push-ups'}
+          </Text> */}
       </View>
     </View>
   );

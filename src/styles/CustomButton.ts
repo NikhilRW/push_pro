@@ -1,18 +1,19 @@
 import { StyleSheet } from "react-native";
+import {width } from "../constants";
 
 export const styles = StyleSheet.create({
     buttonBase: {
-      paddingHorizontal: 32,
+      paddingHorizontal: 16,
       paddingVertical: 16,
       borderRadius: 12,
       marginHorizontal: 8,
       marginVertical: 6,
-      minWidth: 120,
+      width: width * 0.25,
       alignItems: 'center',
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
-      elevation: 8,
+      elevation: 4,
     },
     buttonPrimary: {
       backgroundColor: '#3B82F6',

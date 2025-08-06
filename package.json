@@ -10,13 +10,20 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-vector-icons/fontawesome": "^12.3.0",
+    "@react-native-vector-icons/fontawesome5": "^12.2.0",
+    "@react-native-vector-icons/fontawesome6": "^12.2.0",
+    "@react-native-vector-icons/fontisto": "^12.3.0",
+    "@react-native-vector-icons/foundation": "^12.3.0",
     "nativewind": "^4.1.23",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "react": "19.1.0",
     "react-native": "0.80.0",
     "react-native-fs": "^2.20.0",
+    "react-native-haptic-feedback": "^2.3.3",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-reanimated": "3.18.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-sound": "^0.12.0",
     "react-native-tts": "^4.1.1",
@@ -24,8 +31,7 @@
     "react-native-vision-camera-face-detector": "^1.8.6",
     "react-native-worklets-core": "^1.6.0",
     "tailwindcss": "^3.4.17",
-    "to-words": "^4.7.0",
-    "react-native-reanimated":"3.18.0"
+    "to-words": "^4.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -8,6 +8,8 @@ import { ELEVENLABS_API_KEY } from '@env';
 import Sound from 'react-native-sound';
 import { Buffer } from 'buffer';
 import { ToWords } from 'to-words';
+import { styles } from '../styles/CustomButton';
+import { VolumeType } from '../types/PushupCounter';
 const toWords = new ToWords();
 
 // PERFORMANCE OPTIMIZED: Pre-allocated arrays and variables
@@ -202,9 +204,11 @@ export const speakUsingElevenLabs = (
     lastCount: number;
   }>,
   isMotivationPlaying: boolean,
+  volume: VolumeType,
 ): (() => Promise<{ sound: Sound; motivation: boolean } | null>) => {
   // This function returns a Promise that resolves to either an object with sound and motivation, or null.
   // It should never return 'void' to match the expected type.
+
   return async () => {
     const differenceInCount = count - whenLastMessageIncluded.current.lastCount;
     const isMessageShouldBeIncluded =
@@ -214,7 +218,8 @@ export const speakUsingElevenLabs = (
         let message = '';
         let isMotivation = false;
         if (
-          (isMessageShouldBeIncluded &&
+          (volume === 'high' &&
+            isMessageShouldBeIncluded &&
             Math.floor(Math.random() * 10 + 5) === differenceInCount) ||
           differenceInCount === 10
         ) {
@@ -269,7 +274,8 @@ export const speakUsingElevenLabs = (
         return { sound: sound, motivation: isMotivation };
       } else {
         if (
-          (isMessageShouldBeIncluded &&
+          (volume === 'high' &&
+            isMessageShouldBeIncluded &&
             Math.floor(Math.random() * 5 + 1) === differenceInCount) ||
           differenceInCount === 5
         ) {
@@ -426,4 +432,19 @@ export const newGetStateText = (currentSta: string) => {
     default:
       return 'Waiting...';
   }
+};
+export const getButtonStyle = (
+  buttonVariant: 'primary' | 'secondary' | 'danger',
+  disabled: boolean,
+) => {
+  const variantStyle =
+    `button${buttonVariant[0].toUpperCase() + buttonVariant.slice(1)}` as
+      | 'buttonPrimary'
+      | 'buttonSecondary'
+      | 'buttonDanger';
+  return [
+    styles.buttonBase,
+    styles[variantStyle],
+    disabled && styles.buttonDisabled,
+  ];
 };

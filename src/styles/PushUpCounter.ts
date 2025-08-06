@@ -86,7 +86,10 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 10,
-    minWidth: 200,
+    minWidth: "70%",
+    minHeight:"40%",
+    alignContent:"center",
+    justifyContent:"center",
   },
   counterLabel: {
     color: '#9CA3AF',
@@ -126,7 +129,7 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   countText: {
-    fontSize: 72,
+    fontSize: 162,
     color: 'orange',
     fontWeight: 'bold',
     textAlign: 'center',

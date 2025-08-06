@@ -1,40 +1,56 @@
 import { Text, TouchableOpacity } from 'react-native';
 import { styles } from '../styles/CustomButton';
-
-export const CustomButton = ({
-  title,
-  onPress,
-  variant = 'primary',
-  disabled = false,
-}: {
-  title: string;
-  variant: 'primary' | 'secondary' | 'danger';
-  onPress: () => void;
-  disabled?: boolean;
-}) => {
-  const getButtonStyle = () => {
-    const variantStyle =
-      `button${variant[0].toUpperCase() + variant.slice(1)}` as
-        | 'buttonPrimary'
-        | 'buttonSecondary'
-        | 'buttonDanger';
-    return [
-      styles.buttonBase,
-      styles[variantStyle],
-      disabled && styles.buttonDisabled,
-    ];
-  };
-
-  const getTextStyle = () => [styles.textBase, disabled && styles.textDisabled];
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      style={getButtonStyle()}
-      activeOpacity={0.8}
-    >
-      <Text style={getTextStyle()}>{title}</Text>
-    </TouchableOpacity>
-  );
+import React, { memo, useCallback } from 'react';
+import { getButtonStyle } from '../utils/PushUpCounter';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+const options = {
+  enableVibrateFallback: true,
+  ignoreAndroidSystemSettings: false,
 };
+
+export const CustomButton = memo(
+  ({
+    title,
+    onPress,
+    variant = 'primary',
+    disabled = false,
+    children,
+  }: {
+    title: string;
+    variant: 'primary' | 'secondary' | 'danger';
+    onPress: () => void;
+    disabled?: boolean;
+    children?: React.JSX.Element;
+  }) => {
+    const getTextStyle = () => [
+      styles.textBase,
+      disabled && styles.textDisabled,
+    ];
+
+    const onPressMemoized = useCallback(() => {
+      onPress();
+      ReactNativeHapticFeedback.trigger(
+        variant === 'danger' ? 'effectTick' : 'notificationSuccess',
+        options,
+      );
+    }, [onPress, variant]);
+
+    return (
+      <TouchableOpacity
+        onPress={onPressMemoized}
+        style={getButtonStyle(variant, disabled)}
+        activeOpacity={0.8}
+        className="justify-center items-center"
+      >
+        {children ? children : <Text style={getTextStyle()}>{title}</Text>}
+      </TouchableOpacity>
+    );
+  },
+  (prev, next) => {
+    return (
+      prev.title === next.title &&
+      prev.children?.props.name === next.children?.props.name &&
+      prev.variant === next.variant
+    );
+  },
+);
