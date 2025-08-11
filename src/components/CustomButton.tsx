@@ -1,8 +1,9 @@
 import { Text, TouchableOpacity } from 'react-native';
 import { styles } from '../styles/CustomButton';
 import React, { memo, useCallback } from 'react';
-import { getButtonStyle } from '../utils/PushUpCounter';
+import { getButtonStyle } from '../utils';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { SetVolumeType, VolumeType } from '../types/PushupCounter';
 const options = {
   enableVibrateFallback: true,
   ignoreAndroidSystemSettings: false,
@@ -18,7 +19,7 @@ export const CustomButton = memo(
   }: {
     title: string;
     variant: 'primary' | 'secondary' | 'danger';
-    onPress: () => void;
+    onPress: (volume?: VolumeType, setVolume?: SetVolumeType) => void;
     disabled?: boolean;
     children?: React.JSX.Element;
   }) => {

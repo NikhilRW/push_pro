@@ -5,7 +5,7 @@ import {
   BUFFER_SIZE,
   MAX_FACE_GONE_TIME,
 } from '../constants';
-import { analyzeBufferPattern } from '../utils/PushUpCounter';
+import { analyzeBufferPattern } from '../utils';
 import { usePushupFrameProcessorParamsType } from '../types/usePushupFrameProcessor';
 
 export const usePushupFrameProcessor = ({

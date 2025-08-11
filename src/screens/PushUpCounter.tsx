@@ -10,7 +10,6 @@ import {
   FaceDetectionOptions,
   useFaceDetector,
 } from 'react-native-vision-camera-face-detector';
-
 import {
   Camera,
   useCameraDevice,
@@ -20,29 +19,51 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushupSharedVals } from '../hooks/usePushupSharedVals';
 import { usePushupFrameProcessor } from '../hooks/usePushupFrameProcessor';
 import { useWorkletJsFuncs } from '../hooks/useWorkletJsFuncs';
-import { CustomButton } from '../components/CustomButton';
 import { StatusCard } from '../components/StatusCard';
 import { styles } from '../styles/PushUpCounter';
 import {
+  annouceCountAfterChange,
+  changeVolume,
+  flipTextFunc,
   newGetStateColor,
   newGetStateText,
-  speakUsingElevenLabs,
-} from '../utils/PushUpCounter';
+} from '../utils';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  withSequence,
   withTiming,
-  runOnJS,
+  withRepeat,
+  Easing,
 } from 'react-native-reanimated';
 import { useStoragePermission } from '../hooks/useStoragePermission';
-import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import FontAwesome5 from '@react-native-vector-icons/fontawesome5';
-import { Foundation } from '@react-native-vector-icons/foundation';
 import Sound from 'react-native-sound';
-import { FLIP_DURATION, width } from '../constants';
+import { height, width } from '../constants';
+import { VolumeButton } from '../components/VolumeButton';
+import { PlayPauseButton } from '../components/PlayPauseButton';
+import { RestartButton } from '../components/RestartButton';
+import {
+  Canvas,
+  Group,
+  rect,
+  RoundedRect,
+  rrect,
+  Shadow,
+  Text as SkiaText,
+  useFont,
+} from '@shopify/react-native-skia';
+import {
+  darkInnerBottomRightShadowColor,
+  darkInnerBottomRightShadowColorForButtonBox,
+  darkInnerTopLeftShadowColor,
+  darkInnerTopLeftShadowColorForButtonBox,
+  darkOuterTopLeftShadowColorForButtonBox,
+} from '../constants/colors';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
+  const pulseOpacity = useSharedValue(0);
   const [count, setCount] = useState(0);
   const [currentState, setCurrentState] = useState('ready');
   const [isActive, setIsActive] = useState(false);
@@ -71,39 +92,52 @@ export default function PushUpCounter() {
     range: 0,
   });
 
-  // For animated flip
+  // Breathing Pulse Animation
+  const animatePulse = useCallback(() => {
+    pulseOpacity.value = withRepeat(
+      withTiming(1, {
+        duration: 1000,
+        easing: Easing.bezierFn(0.42, 0, 0.58, 1),
+      }),
+      Infinity,
+      true,
+    );
+  }, [pulseOpacity]);
 
   const animatedRotation = useSharedValue(0);
+  const animatedOpacity = useSharedValue(1);
   const [displayedCount, setDisplayedCount] = useState(count);
 
-  // Animated style for flipping
+  // Animated style for flipping and fading
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { perspective: 800 },
       { rotateX: `${animatedRotation.value}deg` },
     ],
+    opacity: animatedOpacity.value,
   }));
 
-  const flipText = useCallback(() => {
-    'worklet';
-    if (count !== displayedCount) {
-      // Animate to 90deg (hide old count)
-      animatedRotation.value = withTiming(
-        90,
-        { duration: FLIP_DURATION },
-        finished => {
-          if (finished) {
-            runOnJS(setDisplayedCount)(count);
-            animatedRotation.value = withTiming(0, { duration: FLIP_DURATION });
-          }
-        },
-      );
-    }
-  }, [animatedRotation, count, displayedCount]);
+  const flipText = useCallback(
+    () =>
+      flipTextFunc(count, displayedCount, animatedRotation, setDisplayedCount),
+    [animatedRotation, count, displayedCount],
+  );
 
   useEffect(() => {
     flipText();
   }, [count, displayedCount, animatedRotation, flipText]);
+
+  // Trigger a subtle fade whenever the count changes
+  useEffect(() => {
+    animatedOpacity.value = withSequence(
+      withTiming(0.5, { duration: 120 }),
+      withTiming(1, { duration: 180 }),
+    );
+  }, [count, animatedOpacity]);
+
+  useEffect(() => {
+    animatePulse();
+  }, []);
 
   const {
     bufferIndex,
@@ -112,10 +146,9 @@ export default function PushUpCounter() {
     lastFaceDisappearedTime,
   } = usePushupSharedVals();
 
-  // PERFORMANCE: Optimized face detection options
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     contourMode: 'all',
-    performanceMode: 'fast', // Changed from 'accurate' to 'fast' for performance
+    performanceMode: 'fast',
     landmarkMode: 'all',
   }).current;
 
@@ -143,21 +176,8 @@ export default function PushUpCounter() {
   });
 
   useEffect(() => {
-    if (volume !== 'mute') {
-      (async () => {
-        const response = await speakUsingElevenLabs(
-          count,
-          whenLastMessageIncluded,
-          sound.current.motivation && sound.current.sound!.isPlaying(),
-          volume,
-        )()!;
-        if (response !== null) {
-          sound.current.sound = response.sound;
-          sound.current.motivation = response.motivation;
-        }
-      })();
-    }
-  }, [count, volume]);
+    annouceCountAfterChange(volume, count, sound, whenLastMessageIncluded);
+  }, [animatePulse, count, volume]);
 
   useMemo(() => {
     if (!hasPermission) {
@@ -204,20 +224,19 @@ export default function PushUpCounter() {
     lastFaceDisappearedTime.value = 0;
   };
 
-  const changeVolume = () => {
-    if (volume === 'high') {
-      setVolume('mute');
-    } else if (volume === 'mute') {
-      setVolume('low');
-    } else {
-      setVolume('high');
-    }
-  };
-
-  // OPTIMIZATION: Stable function reference for toggle button to prevent re-creation
   const toggleActive = useCallback(() => {
     setIsActive(prev => !prev);
   }, []);
+
+  const pulseAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: pulseOpacity.value,
+    };
+  }, [pulseOpacity]);
+
+  // const font = useFont(require('../res/fonts/impact/impact.ttf'), 44, err => {
+  //   console.log(err);
+  // });
 
   if (!device || !hasPermission) {
     return (
@@ -239,8 +258,9 @@ export default function PushUpCounter() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}
-      className='dark:bg-neutral-900'
+    <View
+      style={[styles.container, { paddingTop: insets.top }]}
+      className="dark:bg-neutral-900"
     >
       {/* <StatusBar barStyle="light-content" backgroundColor="#111827" /> */}
       {/* Hidden Camera */}
@@ -255,18 +275,42 @@ export default function PushUpCounter() {
         />
       </View>
       {/* Header */}
-      <View style={styles.headerBox}>
-        {/* <Text style={styles.headerTitle}>Push-Up Counter</Text> */}
+      <View style={styles.headerContainer}>
+        <Canvas style={styles.headerBox}>
+          <Group>
+            <RoundedRect
+              color={'#0B0F18'}
+              rect={rrect(rect(0, 0, width * 0.94, height * 0.075), 30, 30)}
+            />
+            <Shadow
+              dx={7}
+              dy={7}
+              color={darkInnerTopLeftShadowColor}
+              blur={4}
+              inner
+            />
+            <Shadow
+              dx={-7}
+              dy={-7}
+              color={darkInnerBottomRightShadowColor}
+              blur={4}
+              inner
+            />
+          </Group>
+        </Canvas>
         <View style={styles.stateRow}>
-          <View
+          <Animated.View
             style={[
               styles.stateDot,
               { backgroundColor: newGetStateColor(currentState) },
+              pulseAnimatedStyle,
             ]}
           />
           <Text style={styles.stateText}>{newGetStateText(currentState)}</Text>
         </View>
       </View>
+
+      {/* </View> */}
       {/* Main Counter */}
       <View style={styles.counterContainer}>
         {/* <View style={styles.counterBox}> */}
@@ -291,43 +335,68 @@ export default function PushUpCounter() {
       )}
       {/* Control Buttons */}
       <View style={styles.buttonBox}>
-        <View style={styles.buttonRow}>
-          <CustomButton
-            title="Reset"
-            onPress={resetCounter}
-            variant="secondary"
-          >
-            <Foundation name="refresh" size={width * 0.1} color={'white'} />
-          </CustomButton>
-          <CustomButton
-            title={isActive ? 'Stop' : 'Start'}
-            onPress={() => toggleActive()}
-            variant={isActive ? 'danger' : 'primary'}
-          >
-            <FontAwesome
-              name={`${isActive ? 'pause' : 'play'}`}
-              color={'white'}
-              size={width * 0.09}
+        <Canvas style={{ flex: 1 }}>
+          <Group>
+            <RoundedRect
+              color={'#0B0F18'}
+              rect={rrect(
+                rect(width * 0.045, height * 0.02, width * 0.91, height * 0.2),
+                20,
+                20,
+              )}
             />
-          </CustomButton>
-          <CustomButton
-            title="Reset"
-            onPress={changeVolume} //
-            variant="secondary"
-          >
-            <FontAwesome5
-              name={volumeIconName}
-              iconStyle="solid"
-              size={width * 0.09}
-              color={'white'}
+            <Shadow
+              dx={4.5}
+              dy={4.5}
+              color={darkInnerTopLeftShadowColorForButtonBox}
+              blur={2}
+              inner
             />
-          </CustomButton>
+            <Shadow
+              dx={-4.5}
+              dy={-4.5}
+              color={darkOuterTopLeftShadowColorForButtonBox}
+              blur={5}
+            />
+            <Shadow
+              dx={7}
+              dy={7}
+              color={darkInnerBottomRightShadowColorForButtonBox}
+              blur={4}
+            />
+          </Group>
+        </Canvas>
+        <View className="absolute" style={styles.buttonBoxContianer}>
+          <View style={styles.buttonRow}>
+            <RestartButton
+              title="Reset"
+              onPress={resetCounter}
+              variant="success"
+            />
+            <PlayPauseButton
+              onPress={() => toggleActive()}
+              variant={isActive ? 'danger' : 'primary'}
+            />
+            <VolumeButton
+              title="Reset"
+              onPress={() => changeVolume(volume, setVolume)}
+              variant="warning"
+            >
+              <FontAwesome5
+                name={volumeIconName}
+                iconStyle="solid"
+                size={width * 0.09}
+                color={'white'}
+              />
+            </VolumeButton>
+          </View>
+          <Text style={styles.buttonHint}>
+            {isActive
+              ? 'Camera is active and tracking your movements'
+              : 'Press Start to begin tracking your push-ups'}
+          </Text>
         </View>
-        {/* <Text style={styles.buttonHint}>
-          {isActive
-          ? 'Camera is active and tracking your movements'
-          : 'Press Start to begin tracking your push-ups'}
-          </Text> */}
+        {/* <Button title="increment count" onPress={() => setCount(count + 1)} /> */}
       </View>
     </View>
   );

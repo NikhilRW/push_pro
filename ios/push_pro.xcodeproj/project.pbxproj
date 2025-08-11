@@ -11,6 +11,9 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		ACC83B42666C49A6B5105CD5 /* impact.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DAB3285DF5E143CAAA1C05F4 /* impact.ttf */; };
+		129412ECA6CC4F95B9E24B71 /* Impacted.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6A97B519AF734853ABFD5D3D /* Impacted.ttf */; };
+		1894D4DB797844FEAF167EE3 /* unicode.impact.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 72BC7D47A8BC4F399F77A6A6 /* unicode.impact.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +38,9 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = push_pro/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = push_pro/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		DAB3285DF5E143CAAA1C05F4 /* impact.ttf */ = {isa = PBXFileReference; name = "impact.ttf"; path = "../src/res/fonts/impact/impact.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		6A97B519AF734853ABFD5D3D /* Impacted.ttf */ = {isa = PBXFileReference; name = "Impacted.ttf"; path = "../src/res/fonts/impact/Impacted.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		72BC7D47A8BC4F399F77A6A6 /* unicode.impact.ttf */ = {isa = PBXFileReference; name = "unicode.impact.ttf"; path = "../src/res/fonts/impact/unicode.impact.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +99,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				F4BAA64BB44443C4970CE6EA /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,6 +122,17 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		F4BAA64BB44443C4970CE6EA /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				DAB3285DF5E143CAAA1C05F4 /* impact.ttf */,
+				6A97B519AF734853ABFD5D3D /* Impacted.ttf */,
+				72BC7D47A8BC4F399F77A6A6 /* unicode.impact.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -185,6 +203,9 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				ACC83B42666C49A6B5105CD5 /* impact.ttf in Resources */,
+				129412ECA6CC4F95B9E24B71 /* Impacted.ttf in Resources */,
+				1894D4DB797844FEAF167EE3 /* unicode.impact.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

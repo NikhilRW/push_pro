@@ -6,3 +6,13 @@ export type FaceDetectorPlugin = {
 };
 
 export type VolumeType = 'low' | 'high' | 'mute';
+export type SetVolumeType = React.Dispatch<
+  React.SetStateAction<'low' | 'high' | 'mute'>
+>;
+
+export type ButtonVariantsType =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'success'
+  | 'warning';

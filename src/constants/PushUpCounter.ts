@@ -380,3 +380,8 @@ export const motivationalMessages = [
   "Pain is your forge, craft a savage!",
   "Don’t quit, you’re the toughest out there!"
 ];
+
+export const HapticFeedbackOptions = {
+  enableVibrateFallback: true,
+  ignoreAndroidSystemSettings: false,
+};

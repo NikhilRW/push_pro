@@ -67,14 +67,9 @@ export const useStoragePermission = () => {
     }
   }, [STORAGE_PERMISSIONS]);
 
-  // Check permission on mount
-  useEffect(() => {
-    checkPermission();
-  }, [checkPermission]);
-
-  // Return permission state and request function
+  checkPermission();
   return {
     hasStoragePermission,
     requestStoragePermission,
   };
-};
+}
