@@ -377,7 +377,7 @@ export const motivationalMessages = [
   "Weakness flees from you, chase it down!",
   "You’re a fighter, keep dominating those reps!",
   "Stay hard, you’re building an unbreakable you!",
-  "Pain is your forge, craft a savage!",
+  "You are the greatest!!! keep building strength!",
   "Don’t quit, you’re the toughest out there!"
 ];
 

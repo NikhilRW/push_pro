@@ -28,16 +28,17 @@ export const PlayPauseButton = memo(
       baseColor: isActive ? '#EF4444' : '#3B82F6',
       borderColor: isActive ? '#EF4444' : '#3B82F6',
     };
-
+    const height = 80;
+    const width = 90;
     return (
-      <View className="flex-1 pt-2">
+      <View className="pt-2" style={{height,width}}>
         <NeuromorphicButton
           baseColor={theme.baseColor}
-          borderColor={theme.borderColor}
-          height={80}
-          width={90}
+          height={height}
+          width={width}
           onPress={onPressMemoized}
           svgSource={svgSource}
+          svgSize={{height:75,width:100}}
         />
       </View>
     );

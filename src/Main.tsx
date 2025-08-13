@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../global.css';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import PushUpCounter from './screens/PushUpCounter';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// import SplashScreen from 'react-native-splash-screen';
 
 const Main = () => {
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const androidApiLevel = Platform.Version;
+      if (androidApiLevel < 31) {
+        // SplashScreen.hide();
+      }
+    }
+  }, []);
   return (
     <View className="flex-1">
       <SafeAreaProvider>
-        <GestureHandlerRootView>
           <PushUpCounter />
-        </GestureHandlerRootView>
       </SafeAreaProvider>
     </View>
   );

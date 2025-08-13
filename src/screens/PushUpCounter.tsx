@@ -5,13 +5,12 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { View, Text, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text } from 'react-native';
 import {
   FaceDetectionOptions,
   useFaceDetector,
 } from 'react-native-vision-camera-face-detector';
 import {
-  Camera,
   useCameraDevice,
   useCameraPermission,
 } from 'react-native-vision-camera';
@@ -19,47 +18,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushupSharedVals } from '../hooks/usePushupSharedVals';
 import { usePushupFrameProcessor } from '../hooks/usePushupFrameProcessor';
 import { useWorkletJsFuncs } from '../hooks/useWorkletJsFuncs';
-import { StatusCard } from '../components/StatusCard';
 import { styles } from '../styles/PushUpCounter';
 import {
+  animatedTextStyle,
+  animateOpacity,
+  animatePulse,
   annouceCountAfterChange,
-  changeVolume,
+  findVideoFormat,
   flipTextFunc,
-  newGetStateColor,
-  newGetStateText,
+  getAnimatedPulseStyle,
+  getVolumeIconName,
 } from '../utils';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withRepeat,
-  Easing,
 } from 'react-native-reanimated';
 import { useStoragePermission } from '../hooks/useStoragePermission';
-import FontAwesome5 from '@react-native-vector-icons/fontawesome5';
 import Sound from 'react-native-sound';
-import { height, width } from '../constants';
-import { VolumeButton } from '../components/VolumeButton';
-import { PlayPauseButton } from '../components/PlayPauseButton';
-import { RestartButton } from '../components/RestartButton';
-import {
-  Canvas,
-  Group,
-  rect,
-  RoundedRect,
-  rrect,
-  Shadow,
-  Text as SkiaText,
-  useFont,
-} from '@shopify/react-native-skia';
-import {
-  darkInnerBottomRightShadowColor,
-  darkInnerBottomRightShadowColorForButtonBox,
-  darkInnerTopLeftShadowColor,
-  darkInnerTopLeftShadowColorForButtonBox,
-  darkOuterTopLeftShadowColorForButtonBox,
-} from '../constants/colors';
+import PermisssionRejectedCard from '../components/PermisssionRejectedCard';
+import PushupCamera from '../components/PushupCamera';
+import Header from '../components/Header';
+import DebugCard from '../components/DebugCard';
+import ControlButtons from '../components/ControlButtons';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
@@ -69,12 +49,7 @@ export default function PushUpCounter() {
   const [isActive, setIsActive] = useState(false);
   const [lastFaceY, setLastFaceY] = useState(0);
   const [volume, setVolume] = useState<'mute' | 'high' | 'low'>('low');
-  const volumeIconName =
-    volume === 'high'
-      ? 'volume-up'
-      : volume === 'mute'
-        ? 'volume-off'
-        : 'volume-down';
+  const volumeIconName = getVolumeIconName(volume);
 
   const whenLastMessageIncluded = useRef<{ lastCount: number }>({
     lastCount: 1,
@@ -92,30 +67,25 @@ export default function PushUpCounter() {
     range: 0,
   });
 
-  // Breathing Pulse Animation
-  const animatePulse = useCallback(() => {
-    pulseOpacity.value = withRepeat(
-      withTiming(1, {
-        duration: 1000,
-        easing: Easing.bezierFn(0.42, 0, 0.58, 1),
-      }),
-      Infinity,
-      true,
-    );
-  }, [pulseOpacity]);
+  const animatePulseFunc = useCallback(
+    () => animatePulse(pulseOpacity),
+    [pulseOpacity],
+  );
 
   const animatedRotation = useSharedValue(0);
   const animatedOpacity = useSharedValue(1);
   const [displayedCount, setDisplayedCount] = useState(count);
 
   // Animated style for flipping and fading
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { perspective: 800 },
-      { rotateX: `${animatedRotation.value}deg` },
-    ],
-    opacity: animatedOpacity.value,
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { perspective: 800 },
+        { rotateX: `${animatedRotation.value}deg` },
+      ],
+      opacity: animatedOpacity.value,
+    };
+  });
 
   const flipText = useCallback(
     () =>
@@ -129,15 +99,13 @@ export default function PushUpCounter() {
 
   // Trigger a subtle fade whenever the count changes
   useEffect(() => {
-    animatedOpacity.value = withSequence(
-      withTiming(0.5, { duration: 120 }),
-      withTiming(1, { duration: 180 }),
-    );
+    animateOpacity(animatedOpacity);
   }, [count, animatedOpacity]);
 
   useEffect(() => {
-    animatePulse();
+    animatePulseFunc();
   }, []);
+
 
   const {
     bufferIndex,
@@ -154,9 +122,7 @@ export default function PushUpCounter() {
 
   const faceDetector = useFaceDetector(faceDetectionOptions);
   const device = useCameraDevice('front');
-  const deviceFormat = device!.formats.find(
-    f => f.videoWidth <= 640 && f.videoHeight <= 480,
-  );
+  const deviceFormat = device!.formats.find(findVideoFormat);
   const videoHeight = deviceFormat?.videoHeight!;
   const { hasPermission, requestPermission } = useCameraPermission();
   const { hasStoragePermission, requestStoragePermission } =
@@ -177,7 +143,7 @@ export default function PushUpCounter() {
 
   useEffect(() => {
     annouceCountAfterChange(volume, count, sound, whenLastMessageIncluded);
-  }, [animatePulse, count, volume]);
+  }, [count, volume]);
 
   useMemo(() => {
     if (!hasPermission) {
@@ -228,33 +194,13 @@ export default function PushUpCounter() {
     setIsActive(prev => !prev);
   }, []);
 
-  const pulseAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: pulseOpacity.value,
-    };
-  }, [pulseOpacity]);
-
-  // const font = useFont(require('../res/fonts/impact/impact.ttf'), 44, err => {
-  //   console.log(err);
-  // });
+  const pulseAnimatedStyle = useAnimatedStyle(
+    getAnimatedPulseStyle(pulseOpacity),
+    [pulseOpacity],
+  );
 
   if (!device || !hasPermission) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar barStyle="light-content" backgroundColor="#111827" />
-        <View style={styles.permissionBox}>
-          <ActivityIndicator
-            size="large"
-            color="#3B82F6"
-            style={styles.permissionLoader}
-          />
-          <Text style={styles.permissionTitle}>Setting up Camera</Text>
-          <Text style={styles.permissionSubtitle}>
-            Please allow camera permission to continue
-          </Text>
-        </View>
-      </View>
-    );
+    return <PermisssionRejectedCard />;
   }
 
   return (
@@ -262,142 +208,37 @@ export default function PushUpCounter() {
       style={[styles.container, { paddingTop: insets.top }]}
       className="dark:bg-neutral-900"
     >
-      {/* <StatusBar barStyle="light-content" backgroundColor="#111827" /> */}
       {/* Hidden Camera */}
-      <View style={styles.hiddenCamera}>
-        <Camera
-          style={styles.hiddenCamera}
-          device={device}
-          isActive={isActive}
-          frameProcessor={frameProcessor}
-          fps={15}
-          format={deviceFormat}
-        />
-      </View>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <Canvas style={styles.headerBox}>
-          <Group>
-            <RoundedRect
-              color={'#0B0F18'}
-              rect={rrect(rect(0, 0, width * 0.94, height * 0.075), 30, 30)}
-            />
-            <Shadow
-              dx={7}
-              dy={7}
-              color={darkInnerTopLeftShadowColor}
-              blur={4}
-              inner
-            />
-            <Shadow
-              dx={-7}
-              dy={-7}
-              color={darkInnerBottomRightShadowColor}
-              blur={4}
-              inner
-            />
-          </Group>
-        </Canvas>
-        <View style={styles.stateRow}>
-          <Animated.View
-            style={[
-              styles.stateDot,
-              { backgroundColor: newGetStateColor(currentState) },
-              pulseAnimatedStyle,
-            ]}
-          />
-          <Text style={styles.stateText}>{newGetStateText(currentState)}</Text>
-        </View>
-      </View>
+      <PushupCamera
+        device={device}
+        deviceFormat={deviceFormat!}
+        frameProcessor={frameProcessor}
+        isActive={isActive}
+      />
 
-      {/* </View> */}
+      {/* Header */}
+      <Header
+        currentState={currentState}
+        pulseAnimatedStyle={pulseAnimatedStyle}
+      />
       {/* Main Counter */}
       <View style={styles.counterContainer}>
-        {/* <View style={styles.counterBox}> */}
         <Animated.View style={[animatedStyle]}>
           <Text style={styles.countText}>{displayedCount}</Text>
         </Animated.View>
       </View>
-      {/* Status Cards */}
-      {debugMode && (
-        <View style={styles.statusRow}>
-          <StatusCard
-            title="Face Position"
-            value={lastFaceY ? lastFaceY.toFixed(0) : '---'}
-            subtitle="Y coordinate"
-          />
-          <StatusCard
-            title="Buffer Size"
-            value={bufferInfo.bufferSize}
-            subtitle={`Range: ${bufferInfo.range.toFixed(0)}`}
-          />
-        </View>
-      )}
+      {/* Status Card */}
+      {debugMode && <DebugCard bufferInfo={bufferInfo} lastFaceY={lastFaceY} />}
+
       {/* Control Buttons */}
-      <View style={styles.buttonBox}>
-        <Canvas style={{ flex: 1 }}>
-          <Group>
-            <RoundedRect
-              color={'#0B0F18'}
-              rect={rrect(
-                rect(width * 0.045, height * 0.02, width * 0.91, height * 0.2),
-                20,
-                20,
-              )}
-            />
-            <Shadow
-              dx={4.5}
-              dy={4.5}
-              color={darkInnerTopLeftShadowColorForButtonBox}
-              blur={2}
-              inner
-            />
-            <Shadow
-              dx={-4.5}
-              dy={-4.5}
-              color={darkOuterTopLeftShadowColorForButtonBox}
-              blur={5}
-            />
-            <Shadow
-              dx={7}
-              dy={7}
-              color={darkInnerBottomRightShadowColorForButtonBox}
-              blur={4}
-            />
-          </Group>
-        </Canvas>
-        <View className="absolute" style={styles.buttonBoxContianer}>
-          <View style={styles.buttonRow}>
-            <RestartButton
-              title="Reset"
-              onPress={resetCounter}
-              variant="success"
-            />
-            <PlayPauseButton
-              onPress={() => toggleActive()}
-              variant={isActive ? 'danger' : 'primary'}
-            />
-            <VolumeButton
-              title="Reset"
-              onPress={() => changeVolume(volume, setVolume)}
-              variant="warning"
-            >
-              <FontAwesome5
-                name={volumeIconName}
-                iconStyle="solid"
-                size={width * 0.09}
-                color={'white'}
-              />
-            </VolumeButton>
-          </View>
-          <Text style={styles.buttonHint}>
-            {isActive
-              ? 'Camera is active and tracking your movements'
-              : 'Press Start to begin tracking your push-ups'}
-          </Text>
-        </View>
-        {/* <Button title="increment count" onPress={() => setCount(count + 1)} /> */}
-      </View>
+      <ControlButtons
+        isActive={isActive}
+        resetCounter={resetCounter}
+        setVolume={setVolume}
+        toggleActive={toggleActive}
+        volume={volume}
+        volumeIconName={volumeIconName}
+      />
     </View>
   );
 }

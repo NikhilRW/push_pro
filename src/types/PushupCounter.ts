@@ -16,3 +16,5 @@ export type ButtonVariantsType =
   | 'danger'
   | 'success'
   | 'warning';
+
+export type VolumeIconType = 'volume-up' | 'volume-off' | 'volume-down';

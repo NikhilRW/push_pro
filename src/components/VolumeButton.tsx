@@ -1,43 +1,42 @@
-import { TouchableOpacity } from 'react-native';
-import React, { memo, useCallback } from 'react';
-import { getButtonStyle } from '../utils';
+import { View } from 'react-native';
+import React, { useCallback } from 'react';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { HapticFeedbackOptions } from '../constants';
-import { ButtonVariantsType } from '../types/PushupCounter';
+import { VolumeIconType } from '../types/PushupCounter';
+import NeuromorphicButton from './NeuromorphicButton';
 
-export const VolumeButton = memo(
-  ({
-    onPress,
-    disabled = false,
-    children,
-    variant,
-  }: {
-    title: string;
-    onPress: () => void;
-    disabled?: boolean;
-    children?: React.JSX.Element;
-    variant: ButtonVariantsType;
-  }) => {
-    const onPressMemoized = useCallback(() => {
-      onPress();
-      ReactNativeHapticFeedback.trigger('effectTick', HapticFeedbackOptions);
-    }, [onPress]);
-
-    return (
-      <TouchableOpacity
-        onPress={onPressMemoized}
-        style={getButtonStyle(variant, disabled)}
-        activeOpacity={0.8}
-        className="justify-center items-center"
-      >
-        {children}
-      </TouchableOpacity>
-    );
-  },
-  (prev, next) => {
-    return (
-      prev.title === next.title &&
-      prev.children?.props.name === next.children?.props.name
-    );
-  },
-);
+export const VolumeButton = ({
+  onPress,
+  volumeIconName,
+}: {
+  onPress: () => void;
+  volumeIconName: VolumeIconType;
+}) => {
+  const onPressMemoized = useCallback(() => {
+    onPress();
+    ReactNativeHapticFeedback.trigger('effectTick', HapticFeedbackOptions);
+  }, [onPress]);
+  let svgSource = null;
+  if (volumeIconName === 'volume-down') {
+    svgSource = require('../res/svgs/volume-down.svg');
+  } else if (volumeIconName === 'volume-off') {
+    svgSource = require('../res/svgs/volume-off.svg');
+  } else {
+    svgSource = require('../res/svgs/volume-up.svg');
+  }
+  const height = 80;
+  const width = 90;
+  return (
+    <View className="pt-2" style={{ height, width }}>
+      <NeuromorphicButton
+        baseColor="#D5B60A"
+        height={height}
+        width={width}
+        onPress={onPress}
+        svgSource={svgSource}
+        isVolumeUp={volumeIconName==="volume-up"}
+        // svgSize={{height:100,width:100}}
+      />
+    </View>
+  );
+};

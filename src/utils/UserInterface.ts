@@ -5,82 +5,14 @@ import {
   SetVolumeType,
   VolumeType,
 } from '../types/PushupCounter';
-import { runOnJS, SharedValue, withTiming } from 'react-native-reanimated';
-
-// export const getStateColor = (state: string) => {
-//   switch (state) {
-//     case 'tracking':
-//       return '#2196F3'; // Blue - actively tracking
-//     case 'face_gone_down_phase':
-//       return '#FF9800'; // Orange - face gone (down phase)
-//     case 'pattern_found':
-//       return '#4CAF50'; // Green - pattern detected
-//     case 'counted':
-//       return '#4CAF50'; // Green - just counted
-//     default:
-//       return '#666'; // Gray - ready
-//   }
-// };
-
-// export const getStateText = (state: string) => {
-//   switch (state) {
-//     case 'tracking':
-//       return 'Tracking';
-//     case 'face_gone_down_phase':
-//       return 'Down Phase';
-//     case 'pattern_found':
-//       return 'Pattern Found!';
-//     case 'counted':
-//       return 'Counted!';
-//     default:
-//       return 'Ready';
-//   }
-// };
-
-// export const getPatternColor = (pattern: string) => {
-//   switch (pattern) {
-//     case 'up_gone_return':
-//       return '#4CAF50'; // Green - face gone pattern (most accurate)
-//     case 'up_down_up':
-//       return '#8BC34A'; // Light green - simple up-down pattern
-//     case 'no_face_gone_phase':
-//       return '#FF5722'; // Deep orange - need face gone phase
-//     case 'insufficient_range':
-//       return '#FF9800'; // Orange - not enough movement
-//     case 'insufficient_data':
-//     case 'insufficient_face_data':
-//       return '#2196F3'; // Blue - building buffer
-//     case 'face_lost':
-//       return '#F44336'; // Red - face lost too long
-//     default:
-//       return '#666'; // Gray - analyzing
-//   }
-// };
-
-// export const getPatternText = (pattern: string) => {
-//   switch (pattern) {
-//     case 'reference_set':
-//       return 'Start Position Set';
-//     case 'invalid_return_position':
-//       return 'Return to Start';
-//     case 'up_gone_return':
-//       return 'Up→Gone→Return';
-//     case 'up_down_up':
-//       return 'Up→Down→Up';
-//     case 'no_face_gone_phase':
-//       return 'Need Face Gone Phase';
-//     case 'insufficient_range':
-//       return 'Small Movement';
-//     case 'insufficient_data':
-//       return 'Building Buffer';
-//     case 'insufficient_face_data':
-//       return 'Need More Face Data';
-//     case 'face_lost':
-//       return 'Face Lost';
-//     default:
-//       return 'Analyzing';
-//   }
-// };
+import {
+  Easing,
+  runOnJS,
+  SharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 export const newGetStateColor = (currentSta: string) => {
   switch (currentSta) {
@@ -155,4 +87,54 @@ export const changeVolume = (volume: VolumeType, setVolume: SetVolumeType) => {
   } else {
     setVolume('high');
   }
+};
+
+export const getVolumeIconName = (volume: VolumeType) => {
+  return volume === 'high'
+    ? 'volume-up'
+    : volume === 'mute'
+      ? 'volume-off'
+      : 'volume-down';
+};
+
+export const animatePulse = (pulseOpacity: SharedValue<number>) => {
+  pulseOpacity.value = withRepeat(
+    withTiming(1, {
+      duration: 1000,
+      easing: Easing.bezierFn(0.42, 0, 0.58, 1),
+    }),
+    Infinity,
+    true,
+  );
+};
+
+export const animatedTextStyle = (
+  animatedRotation: SharedValue<number>,
+  animatedOpacity: SharedValue<number>,
+) => {
+  'worklet';
+  return {
+    transform: [
+      { perspective: 800 },
+      { rotateX: `${animatedRotation.value}deg` },
+    ],
+    opacity: animatedOpacity.value,
+  };
+};
+
+export const getAnimatedPulseStyle = (pulseOpacity: SharedValue<number>) => {
+  'worklet';
+  return () => {
+    'worklet';
+    return {
+      opacity: pulseOpacity.value,
+    };
+  };
+};
+
+export const animateOpacity = (animatedOpacity: SharedValue<number>) => {
+  animatedOpacity.value = withSequence(
+    withTiming(0.5, { duration: 120 }),
+    withTiming(1, { duration: 180 }),
+  );
 };

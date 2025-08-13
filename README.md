@@ -95,3 +95,63 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+{
+  "name": "push_pro",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "lint": "eslint .",
+    "start": "react-native start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@react-native-vector-icons/fontawesome": "^12.3.0",
+    "@react-native-vector-icons/fontawesome5": "^12.2.0",
+    "@react-native-vector-icons/fontawesome6": "^12.2.0",
+    "@react-native-vector-icons/fontisto": "^12.3.0",
+    "@react-native-vector-icons/foundation": "^12.3.0",
+    "nativewind": "^4.1.23",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "react": "19.1.0",
+    "react-native": "0.80.0",
+    "react-native-fs": "^2.20.0",
+    "react-native-haptic-feedback": "^2.3.3",
+    "react-native-linear-gradient": "^2.8.3",
+    "react-native-reanimated": "3.18.0",
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-sound": "^0.12.0",
+    "react-native-tts": "^4.1.1",
+    "react-native-vision-camera": "4.7.1",
+    "react-native-vision-camera-face-detector": "^1.8.6",
+    "react-native-worklets-core": "^1.6.0",
+    "tailwindcss": "^3.4.17",
+    "react-native-gesture-handler": "2.27.1",
+    "to-words": "^4.7.0",
+    "@shopify/react-native-skia": "2.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "19.1.1",
+    "@react-native-community/cli-platform-android": "19.1.1",
+    "@react-native-community/cli-platform-ios": "19.1.1",
+    "@react-native/babel-preset": "0.80.2",
+    "@react-native/eslint-config": "0.80.2",
+    "@react-native/metro-config": "0.80.2",
+    "@react-native/typescript-config": "0.80.2",
+    "@types/jest": "^29.5.13",
+    "@types/react": "^19.1.0",
+    "@types/react-test-renderer": "^19.1.0",
+    "eslint": "^8.19.0",
+    "jest": "^29.6.3",
+    "react-native-dotenv": "3.4.11",
+    "react-test-renderer": "19.1.0",
+    "typescript": "5.0.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }

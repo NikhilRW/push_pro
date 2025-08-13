@@ -1,4 +1,3 @@
-import { ButtonVariantsType } from '../types/PushupCounter';
 import NeuromorphicButton from './NeuromorphicButton';
 import { View } from 'react-native';
 
@@ -6,18 +5,18 @@ export const RestartButton = ({
   onPress,
 }: {
   title: string;
-  variant: ButtonVariantsType;
   onPress: () => void;
   disabled?: boolean;
 }) => {
   const svgSource = require('../res/svgs/refresh.svg');
+  const height = 80;
+  const width = 90;
   return (
-    <View className="flex-1 pt-2">
+    <View className="pt-2" style={{height,width}}>
       <NeuromorphicButton
         baseColor="#16414F"
-        borderColor="#16414F"
-        height={80}
-        width={90}
+        height={height}
+        width={width}
         onPress={onPress}
         svgSource={svgSource}
       />

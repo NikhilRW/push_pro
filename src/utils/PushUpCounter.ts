@@ -1,3 +1,4 @@
+import { CameraDeviceFormat } from 'react-native-vision-camera';
 import { PATTERN_CONFIDENCE_THRESHOLD } from '../constants';
 
 // PERFORMANCE OPTIMIZED: Pre-allocated arrays and variables
@@ -185,3 +186,6 @@ export const analyzeBufferPattern = (
     faceGoneRatio,
   };
 };
+
+export const findVideoFormat = (f: CameraDeviceFormat) =>
+  f.videoWidth <= 640 && f.videoHeight <= 480;
