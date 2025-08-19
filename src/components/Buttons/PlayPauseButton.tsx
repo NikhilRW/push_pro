@@ -1,8 +1,8 @@
 import { View } from 'react-native';
-import React, { memo, useCallback } from 'react';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import { HapticFeedbackOptions } from '../constants';
+import React, { memo } from 'react';
 import NeuromorphicButton from './NeuromorphicButton';
+import { useVibrateOnPress } from '../../hooks/useVibrateOnPress';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 export const PlayPauseButton = memo(
   ({
@@ -14,31 +14,25 @@ export const PlayPauseButton = memo(
     disabled?: boolean;
     children?: React.JSX.Element;
   }) => {
-    const onPressMemoized = useCallback(() => {
-      onPress();
-      ReactNativeHapticFeedback.trigger('effectTick', HapticFeedbackOptions);
-    }, [onPress]);
-
+    const vibrateOnPress = useVibrateOnPress(onPress);
     const isActive = variant === 'danger';
     const svgSource = isActive
-      ? require('../res/svgs/pause.svg')
-      : require('../res/svgs/play.svg');
-
-    const theme = {
-      baseColor: isActive ? '#EF4444' : '#3B82F6',
-      borderColor: isActive ? '#EF4444' : '#3B82F6',
-    };
+      ? require('../../res/svgs/pause.svg')
+      : require('../../res/svgs/play.svg');
+    const themeColors = useThemeColors();
+    const baseColor =
+      themeColors.controlButton[isActive ? 'pause' : 'play'].iconBgColor;
     const height = 80;
     const width = 90;
     return (
-      <View className="pt-2" style={{height,width}}>
+      <View className="pt-2" style={{ height, width }}>
         <NeuromorphicButton
-          baseColor={theme.baseColor}
+          baseColor={baseColor}
           height={height}
           width={width}
-          onPress={onPressMemoized}
+          onPressOut={vibrateOnPress}
           svgSource={svgSource}
-          svgSize={{height:75,width:100}}
+          svgSize={{ height: 85, width: 85 }}
         />
       </View>
     );

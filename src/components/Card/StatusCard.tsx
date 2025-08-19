@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { styles } from '../styles/StatusCard';
+import { styles } from '../../styles/StatusCard';
 
 export const StatusCard = ({
   title,

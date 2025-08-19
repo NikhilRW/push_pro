@@ -1,5 +1,6 @@
 import { CameraDeviceFormat } from 'react-native-vision-camera';
 import { PATTERN_CONFIDENCE_THRESHOLD } from '../constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // PERFORMANCE OPTIMIZED: Pre-allocated arrays and variables
 let referenceY: number | null = null;
@@ -17,6 +18,7 @@ export const analyzeBufferPattern = (
   'worklet';
 
   // Early exit for insufficient data
+  // TODO: Testing The Different Buffer Length
   if (buffer.length < 12) {
     return { found: false, confidence: 0, pattern: 'insufficient_data' };
   }
@@ -59,7 +61,7 @@ export const analyzeBufferPattern = (
   }
 
   // Early exit if insufficient face data
-  if (faceDetectedCount < 5) {
+  if (faceDetectedCount < 6) {
     referenceY = null;
     return { found: false, confidence: 0, pattern: 'insufficient_face_data' };
   }
@@ -67,8 +69,8 @@ export const analyzeBufferPattern = (
   // Calculate range
   const range = maxY - minY;
 
-  // Early exit for insufficient movement
-  if (range < 50) {
+  // Early exit for insufficient movement - increased threshold for head movements
+  if (range < 60) {
     return {
       found: false,
       confidence: 0,
@@ -80,8 +82,8 @@ export const analyzeBufferPattern = (
   }
 
   // CRITICAL: Check if face was undetected at least once (indicating person went down)
-  // console.log(faceGoneCount);
-  if (faceGoneCount <= 8) {
+  console.log("faceGoneCount",faceDetectedCount);
+  if (faceGoneCount < 7) {
     return {
       found: false,
       confidence: 0,
@@ -110,14 +112,18 @@ export const analyzeBufferPattern = (
     }
 
     recentVelocity = velocitySum / recentCount;
-    velocityStable = recentVelocity < 0.1; // Threshold for stability
+    // TODO: Change Threshold Stability
+    velocityStable = recentVelocity < 0.1 // Threshold for stability
   }
 
   // PERFORMANCE: Simplified pattern detection
   const faceGoneRatio = faceGoneCount / bufferLength;
-  const hasFaceGonePhase = faceGoneRatio > 0.1; // Reduced to 10% - just need some face gone frames
+  // More strict face gone phase requirement to filter head movements
+  const hasFaceGonePhase = faceGoneRatio > 0.2; // Increased from 10% to 20%
 
   // Calculate movement patterns
+  console.log("firstFaceY",firstFaceY);
+  console.log("minY",minY);
   const upwardMovement = firstFaceY - minY; // Face goes up (Y decreases)
   const returnMovement = Math.abs(lastFaceY - firstFaceY);
 
@@ -125,9 +131,14 @@ export const analyzeBufferPattern = (
   let patternType = 'none';
 
   // CRITICAL: Only count pushups when face was gone (person went down)
-  if (faceDetectedCount >= 6) {
+  // TODO: Try Changing The faceDetectedCount Up And Down With Trail And Error
+  if (faceDetectedCount >= 5) {
     // Pattern: face visible → up → gone → returns
-    if (upwardMovement > 15 && returnMovement < 25) {
+    console.log("upwardMovement",upwardMovement);
+    console.log("returnMovement",returnMovement);
+    if (upwardMovement > 19 
+      && returnMovement < 30
+    ) {
       confidence = Math.min(
         0.95,
         (upwardMovement + (hasFaceGonePhase ? 20 : 0)) / 40,
@@ -145,6 +156,7 @@ export const analyzeBufferPattern = (
 
   // Initialize reference if needed
   if (referenceY === null && confidence < PATTERN_CONFIDENCE_THRESHOLD) {
+    // TODO: Try Changing The VelocityStable Easily
     if (faceDetectedCount >= 5 && velocityStable) {
       referenceY = currentY;
       return { found: false, confidence: 0, pattern: 'reference_set' };
@@ -153,8 +165,9 @@ export const analyzeBufferPattern = (
 
   // Validate against reference position
   if (referenceY !== null && confidence >= PATTERN_CONFIDENCE_THRESHOLD) {
-    const returnToStart = Math.abs(currentY - referenceY) < 30;
-    const sufficientTimePassed = currentTime - lastValidPushupTime > 150; // Reduced to 150ms
+    // Allow faster consecutive pushups
+    const returnToStart = Math.abs(currentY - referenceY) < 65; // Slightly increased tolerance
+    const sufficientTimePassed = currentTime - lastValidPushupTime > 150; // Reduced from 200ms to 150ms
 
     if (returnToStart && sufficientTimePassed) {
       lastValidPushupTime = currentTime;
@@ -189,3 +202,25 @@ export const analyzeBufferPattern = (
 
 export const findVideoFormat = (f: CameraDeviceFormat) =>
   f.videoWidth <= 640 && f.videoHeight <= 480;
+
+export const incrementTimesAppOpened = async () => {
+  const timesOpened = await AsyncStorage.getItem('timesOpened');
+  if (timesOpened === null) {
+    await AsyncStorage.setItem('timesOpened', '1');
+  } else {
+    let timesOpenedNum = parseInt(timesOpened, 10);
+    console.log(timesOpenedNum);
+    timesOpenedNum++;
+    await AsyncStorage.setItem('timesOpened', timesOpenedNum.toString());
+  }
+};
+
+export const checkTimesAppOpenedPassedLimit = async () => {
+  const timesOpened = await AsyncStorage.getItem('timesOpened');
+  if (timesOpened === null) {
+    return false;
+  } else {
+    const timesOpenedNum = parseInt(timesOpened, 10);
+    return timesOpenedNum >= 3;
+  }
+};

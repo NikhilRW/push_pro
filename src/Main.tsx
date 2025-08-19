@@ -1,25 +1,39 @@
-import React, { useEffect } from 'react';
 import '../global.css';
-import { Platform, View } from 'react-native';
-import PushUpCounter from './screens/PushUpCounter';
+import { NavigationContainer } from '@react-navigation/native';
+import RootStack from './navigation/RootStack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-// import SplashScreen from 'react-native-splash-screen';
+import { ThemeProvider } from './context/ThemeContext';
+import { StatusBar } from 'react-native';
+import { useTheme } from './context/ThemeContext';
+import { checkTimesAppOpenedPassedLimit } from './utils';
+import { useEffect, useState } from 'react';
 
-const Main = () => {
+const MainContent = () => {
+  const { isDark } = useTheme();
+  const [isLimitPassed, setIsLimitPassed] = useState<boolean>(false);
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      const androidApiLevel = Platform.Version;
-      if (androidApiLevel < 31) {
-        // SplashScreen.hide();
-      }
-    }
+    (async () => {
+      setIsLimitPassed(await checkTimesAppOpenedPassedLimit());
+    })();
   }, []);
   return (
-    <View className="flex-1">
-      <SafeAreaProvider>
-          <PushUpCounter />
-      </SafeAreaProvider>
-    </View>
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={isDark ? '#111827' : '#FFFFFF'}
+      />
+      <NavigationContainer>
+        <RootStack isLimitPassed={isLimitPassed} />
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+};
+
+const Main = () => {
+  return (
+    <ThemeProvider>
+      <MainContent />
+    </ThemeProvider>
   );
 };
 

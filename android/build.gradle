@@ -16,6 +16,13 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
+    project.ext {
+        useExoplayerHls = true     // Enable HLS support
+        useExoplayerDash = true    // Enable DASH support
+        useExoplayerRtsp = false   // Disable RTSP
+        useExoplayerIMA = false    // Disable IMA ads
+        useExoplayerSmoothStreaming = false  // Disable Smooth Streaming
+    }
 }
 
 apply plugin: "com.facebook.react.rootproject"

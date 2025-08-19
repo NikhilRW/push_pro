@@ -6,6 +6,8 @@ import React, {
   useCallback,
 } from 'react';
 import { View, Text } from 'react-native';
+import { useThemeColors } from '../hooks/useThemeColors';
+import { useThemedStyles } from '../styles/PushUpCounter';
 import {
   FaceDetectionOptions,
   useFaceDetector,
@@ -18,38 +20,38 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePushupSharedVals } from '../hooks/usePushupSharedVals';
 import { usePushupFrameProcessor } from '../hooks/usePushupFrameProcessor';
 import { useWorkletJsFuncs } from '../hooks/useWorkletJsFuncs';
-import { styles } from '../styles/PushUpCounter';
+
 import {
-  animatedTextStyle,
+  getAnimatedTextStyle,
   animateOpacity,
   animatePulse,
   annouceCountAfterChange,
   findVideoFormat,
   flipTextFunc,
   getAnimatedPulseStyle,
-  getVolumeIconName,
 } from '../utils';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
-import { useStoragePermission } from '../hooks/useStoragePermission';
 import Sound from 'react-native-sound';
-import PermisssionRejectedCard from '../components/PermisssionRejectedCard';
-import PushupCamera from '../components/PushupCamera';
-import Header from '../components/Header';
-import DebugCard from '../components/DebugCard';
-import ControlButtons from '../components/ControlButtons';
+import PermisssionRejectedCard from '../components/Card/PermisssionRejectedCard';
+import PushupCamera from '../components/Common/PushupCamera';
+import Header from '../components/Common/Header';
+import DebugCard from '../components/Card/DebugCard';
+import ControlButtons from '../components/Buttons/ControlButtons';
+import useRequestCameraWithRationale from '../hooks/useRequestCameraWithRationale';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
+  const themeColors = useThemeColors();
+  const styles = useThemedStyles();
   const pulseOpacity = useSharedValue(0);
   const [count, setCount] = useState(0);
   const [currentState, setCurrentState] = useState('ready');
   const [isActive, setIsActive] = useState(false);
   const [lastFaceY, setLastFaceY] = useState(0);
   const [volume, setVolume] = useState<'mute' | 'high' | 'low'>('low');
-  const volumeIconName = getVolumeIconName(volume);
 
   const whenLastMessageIncluded = useRef<{ lastCount: number }>({
     lastCount: 1,
@@ -77,15 +79,9 @@ export default function PushUpCounter() {
   const [displayedCount, setDisplayedCount] = useState(count);
 
   // Animated style for flipping and fading
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { perspective: 800 },
-        { rotateX: `${animatedRotation.value}deg` },
-      ],
-      opacity: animatedOpacity.value,
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() =>
+    getAnimatedTextStyle(animatedRotation, animatedOpacity),
+  );
 
   const flipText = useCallback(
     () =>
@@ -104,8 +100,8 @@ export default function PushUpCounter() {
 
   useEffect(() => {
     animatePulseFunc();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   const {
     bufferIndex,
@@ -125,8 +121,8 @@ export default function PushUpCounter() {
   const deviceFormat = device!.formats.find(findVideoFormat);
   const videoHeight = deviceFormat?.videoHeight!;
   const { hasPermission, requestPermission } = useCameraPermission();
-  const { hasStoragePermission, requestStoragePermission } =
-    useStoragePermission();
+  const { requestCameraWithRationale } =
+    useRequestCameraWithRationale(requestPermission);
 
   const {
     incrementCount,
@@ -145,19 +141,13 @@ export default function PushUpCounter() {
     annouceCountAfterChange(volume, count, sound, whenLastMessageIncluded);
   }, [count, volume]);
 
-  useMemo(() => {
-    if (!hasPermission) {
-      requestPermission();
-    }
-    if (!hasStoragePermission) {
-      requestStoragePermission();
-    }
-  }, [
-    hasPermission,
-    hasStoragePermission,
-    requestPermission,
-    requestStoragePermission,
-  ]);
+  useEffect(() => {
+    (async () => {
+      if (!hasPermission) {
+        requestCameraWithRationale();
+      }
+    })();
+  }, [hasPermission, requestCameraWithRationale, requestPermission]);
 
   const frameProcessor = usePushupFrameProcessor({
     faceDetector,
@@ -173,7 +163,7 @@ export default function PushUpCounter() {
     videoHeight,
   });
 
-  const resetCounter = () => {
+  const resetCounter = useCallback(() => {
     setCount(0);
     setCurrentState('ready');
     setLastFaceY(0);
@@ -188,7 +178,7 @@ export default function PushUpCounter() {
     bufferIndex.value = 0;
     lastAnalysisTime.value = 0;
     lastFaceDisappearedTime.value = 0;
-  };
+  }, [bufferIndex, faceYBuffer, lastAnalysisTime, lastFaceDisappearedTime]);
 
   const toggleActive = useCallback(() => {
     setIsActive(prev => !prev);
@@ -199,14 +189,27 @@ export default function PushUpCounter() {
     [pulseOpacity],
   );
 
+  const controlButtonsProps = useMemo(
+    () => ({
+      isActive,
+      resetCounter,
+      setVolume,
+      toggleActive,
+      volume,
+    }),
+    [isActive, resetCounter, setVolume, toggleActive, volume],
+  );
+
   if (!device || !hasPermission) {
     return <PermisssionRejectedCard />;
   }
 
   return (
     <View
-      style={[styles.container, { paddingTop: insets.top }]}
-      className="dark:bg-neutral-900"
+      style={[
+        styles.container,
+        { paddingTop: insets.top, backgroundColor: themeColors.background },
+      ]}
     >
       {/* Hidden Camera */}
       <PushupCamera
@@ -227,18 +230,12 @@ export default function PushUpCounter() {
           <Text style={styles.countText}>{displayedCount}</Text>
         </Animated.View>
       </View>
+
       {/* Status Card */}
       {debugMode && <DebugCard bufferInfo={bufferInfo} lastFaceY={lastFaceY} />}
 
       {/* Control Buttons */}
-      <ControlButtons
-        isActive={isActive}
-        resetCounter={resetCounter}
-        setVolume={setVolume}
-        toggleActive={toggleActive}
-        volume={volume}
-        volumeIconName={volumeIconName}
-      />
+      <ControlButtons {...controlButtonsProps} />
     </View>
   );
 }

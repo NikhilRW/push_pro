@@ -1,1 +1,2 @@
-export * from "./PushUpCounter";
+export * from './PushUpCounter';
+export * from './colors';

@@ -7,6 +7,7 @@ import { Buffer } from 'buffer';
 import { VolumeType } from '../types/PushupCounter';
 import { ToWords } from 'to-words';
 import RNHapticFeedback from 'react-native-haptic-feedback';
+import Tts from 'react-native-tts';
 
 const toWords = new ToWords();
 
@@ -91,7 +92,6 @@ export const speakUsingElevenLabs = (
           (Math.floor(Math.random() * 5 + 1) === differenceInCount ||
             differenceInCount === 5)
         ) {
-          console.log(volume === 'high');
           whenLastMessageIncluded.current.lastCount = count;
           const newSound = new Sound(
             'message' + Math.floor(Math.random() * motivationalMessages.length),
@@ -119,8 +119,14 @@ export const speakUsingElevenLabs = (
         }
       }
     } catch (err) {
-      console.error('TTS speakText error', err);
-      Alert.alert('Error', 'Something went wrong during TTS');
+      Tts.getInitStatus().then(success => {
+        if (success) {
+          Tts.speak(count.toString());
+        } else {
+          console.error('Speak Count error', err);
+          Alert.alert('Error', 'Something went wrong during Speak Count');
+        }
+      });
       return null;
     }
   };

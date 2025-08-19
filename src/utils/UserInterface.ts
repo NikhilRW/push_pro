@@ -14,29 +14,33 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 
-export const newGetStateColor = (currentSta: string) => {
-  switch (currentSta) {
+export const newGetStateColor = (currentState: string) => {
+  switch (currentState) {
     case 'ready':
-      return '#10B981';
-    case 'down':
-      return '#F59E0B';
-    case 'up':
-      return '#3B82F6';
+      return '#22C55E'; // Bright green for ready state
+    case 'tracking':
+      return '#3B82F6'; // Blue for active tracking
+    case 'pattern_found':
+      return '#8B5CF6'; // Purple for successful pattern detection
+    case 'face_gone_down_phase':
+      return '#F59E0B'; // Amber for face temporarily gone (expected during pushup)
     default:
-      return '#6B7280';
+      return '#6B7280'; // Neutral gray for other states
   }
 };
 
-export const newGetStateText = (currentSta: string) => {
-  switch (currentSta) {
+export const newGetStateText = (currentState: string) => {
+  switch (currentState) {
     case 'ready':
       return 'Ready to Start';
-    case 'down':
-      return 'Going Down';
-    case 'up':
-      return 'Push Up!';
+    case 'tracking':
+      return 'Tracking Movement';
+    case 'pattern_found':
+      return 'Push-up Counted!';
+    case 'face_gone_down_phase':
+      return 'Keep Going Down';
     default:
-      return 'Waiting...';
+      return 'Get in Position';
   }
 };
 
@@ -89,14 +93,6 @@ export const changeVolume = (volume: VolumeType, setVolume: SetVolumeType) => {
   }
 };
 
-export const getVolumeIconName = (volume: VolumeType) => {
-  return volume === 'high'
-    ? 'volume-up'
-    : volume === 'mute'
-      ? 'volume-off'
-      : 'volume-down';
-};
-
 export const animatePulse = (pulseOpacity: SharedValue<number>) => {
   pulseOpacity.value = withRepeat(
     withTiming(1, {
@@ -108,7 +104,7 @@ export const animatePulse = (pulseOpacity: SharedValue<number>) => {
   );
 };
 
-export const animatedTextStyle = (
+export const getAnimatedTextStyle = (
   animatedRotation: SharedValue<number>,
   animatedOpacity: SharedValue<number>,
 ) => {
@@ -123,7 +119,6 @@ export const animatedTextStyle = (
 };
 
 export const getAnimatedPulseStyle = (pulseOpacity: SharedValue<number>) => {
-  'worklet';
   return () => {
     'worklet';
     return {
@@ -137,4 +132,15 @@ export const animateOpacity = (animatedOpacity: SharedValue<number>) => {
     withTiming(0.5, { duration: 120 }),
     withTiming(1, { duration: 180 }),
   );
+};
+
+export const getVolumeIcon = (volume: VolumeType) => {
+  switch (volume) {
+    case 'low':
+      return require('../res/svgs/volume-down.svg');
+    case 'high':
+      return require('../res/svgs/volume-up.svg');
+    case 'mute':
+      return require('../res/svgs/volume-off.svg');
+  }
 };

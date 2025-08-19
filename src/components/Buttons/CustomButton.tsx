@@ -1,9 +1,9 @@
 import { Text, TouchableOpacity } from 'react-native';
-import { styles } from '../styles/CustomButton';
+import { styles } from '../../styles/CustomButton';
 import React, { memo, useCallback } from 'react';
-import { getButtonStyle } from '../utils';
+import { getButtonStyle } from '../../utils';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
-import { SetVolumeType, VolumeType } from '../types/PushupCounter';
+import { SetVolumeType, VolumeType } from '../../types/PushupCounter';
 const options = {
   enableVibrateFallback: true,
   ignoreAndroidSystemSettings: false,

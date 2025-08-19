@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 import React from 'react';
-import { styles } from '../styles/PushUpCounter';
 import {
   CameraDevice,
   CameraDeviceFormat,
@@ -8,6 +7,7 @@ import {
   ReadonlyFrameProcessor,
   Camera,
 } from 'react-native-vision-camera';
+import { useThemedStyles } from '../../styles/PushUpCounter';
 
 const PushupCamera = ({
   deviceFormat,
@@ -20,6 +20,7 @@ const PushupCamera = ({
   frameProcessor: ReadonlyFrameProcessor | DrawableFrameProcessor | undefined;
   deviceFormat: CameraDeviceFormat;
 }) => {
+  const styles = useThemedStyles();
   return (
     <View style={styles.hiddenCamera}>
       <Camera

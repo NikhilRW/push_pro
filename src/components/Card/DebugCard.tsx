@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import React from 'react';
 import { StatusCard } from './StatusCard';
-import { styles } from '../styles/PushUpCounter';
+import { useThemedStyles } from '../../styles/PushUpCounter';
 
 const DebugCard = ({
   bufferInfo,
@@ -16,6 +16,7 @@ const DebugCard = ({
     range: number;
   };
 }) => {
+  const styles = useThemedStyles();
   return (
     <View style={styles.statusRow}>
       <StatusCard

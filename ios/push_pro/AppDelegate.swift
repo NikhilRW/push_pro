@@ -28,7 +28,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       in: window,
       launchOptions: launchOptions
     )
+    rootView.backgroundColor = [UIColor colorWithRed:253.00000 green:153 blue:0.00000 alpha:1.0];
 
+    super.application(application, didFinishLaunchingWithOptions: launchOptions)
     return true
   }
 }

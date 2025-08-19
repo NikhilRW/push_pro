@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     android:background="#FDA325">
 
-    <ImageView
+    <SurfaceView
         android:layout_width="205dp"
         android:layout_height="180dp"
         android:layout_centerInParent="true"
-        android:src="@drawable/pushpro" />
+
+        />
 </RelativeLayout>
