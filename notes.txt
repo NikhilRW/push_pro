@@ -16,3 +16,6 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin https://github.com/NikhilRW/push_pro.git
 git push -u origin main
+
+// Short Description Of The Push Pro App For The Usage In Google Play Console.
+Push Pro - Count pushups effortlessly! Track, improve, achieve greatest results

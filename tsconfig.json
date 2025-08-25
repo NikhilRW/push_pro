@@ -1,3 +1,13 @@
 {
-  "extends": "@react-native/typescript-config"
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "instructions/*": ["./src/features/instructions/*"],
+      "pushup-counter/*": ["./src/features/pushup-counter/*"],
+      "splash-screen/*": ["./src/features/splash-screen/*"],
+      "shared/*": ["./src/shared/*"],
+      "res/*": ["./src/shared/res/*"],
+    }
+  }
 }

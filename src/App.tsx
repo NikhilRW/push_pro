@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import Main from './Main';
-// import { incrementTimesAppOpened } from './utils';
+import { incrementTimesAppOpened } from 'shared/utils/app-initialization';
 
 function App() {
   useEffect(() => {
     (async () => {
-      // await incrementTimesAppOpened();
+      await incrementTimesAppOpened();
     })();
   }, []);
 
-  return <Main />;
+  return <Main/>;
 }
 
 export default App;

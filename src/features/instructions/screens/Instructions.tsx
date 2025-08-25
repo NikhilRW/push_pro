@@ -1,0 +1,109 @@
+import {
+  View,
+  Text,
+  useColorScheme,
+  TouchableOpacity,
+  AccessibilityInfo,
+} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { colors } from '@/shared/constants/colors';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from 'shared/types/Navigation';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import { instructionMessages } from 'instructions/constants/instructions-steps';
+import { styles } from 'instructions/styles/Instructions';
+import InstructionItem from 'instructions/components/InstructionItem';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
+import FastImage from 'react-native-fast-image';
+
+const Instructions = () => {
+  const colorScheme = useColorScheme();
+  const theme = colors[colorScheme!];
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [noOfInstructionShown, setNoOfInstructionShown] = useState(1);
+
+  const incrementStepsShown = () => {
+    setNoOfInstructionShown(previous => previous + 1);
+    if (noOfInstructionShown === instructionMessages.length) {
+      navigateToPushupCounter();
+    }
+    AccessibilityInfo.announceForAccessibility(instructionMessages[noOfInstructionShown-1]);
+  };
+
+  const navigateToPushupCounter = () => {
+    navigation.navigate('PushupCounter', {});
+  };
+    useEffect(()=>{
+    const main = async () => {
+      const screenReaderEnabled =  await AccessibilityInfo.isScreenReaderEnabled();
+    if(screenReaderEnabled){
+      AccessibilityInfo.announceForAccessibility('Instructions screen');
+      AccessibilityInfo.announceForAccessibility(instructionMessages[0]);
+    }
+    }
+    main();
+  },[]);
+
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.surface,
+            shadowColor: theme.shadow.default,
+          },
+        ]}
+      >
+        <View style={styles.imageContainer}>
+          <FastImage
+            source={require('res/pngs/doingpushup2.png')}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
+        <View style={styles.contentContainer}>
+          <Text style={[styles.title, { color: theme.text.primary }]}>
+            How to Use Push Pro Counter
+          </Text>
+          <Animated.View
+            style={styles.instructionsContainer}
+            layout={LinearTransition.duration(500)}
+          >
+            {instructionMessages
+              .slice(0, noOfInstructionShown)
+              .map((item, index) => {
+                return (
+                  <InstructionItem
+                    key={index}
+                    noOfInstructionShown={noOfInstructionShown}
+                    instructionNumber={index}
+                    message={item}
+                  />
+                );
+              })}
+          </Animated.View>
+        </View>
+      </Animated.View>
+      <TouchableOpacity
+        onPress={incrementStepsShown}
+        style={styles.instructionItem}
+        accessibilityHint="Show Next Instruction"
+        accessibilityActions={[{ name: "Show Next Instruction", label: "Show Next Instruction" }]}
+        accessible
+        accessibilityRole="button"
+        onAccessibilityAction={(event) => {
+          event.nativeEvent.actionName === "Show Next Instruction" && incrementStepsShown();
+        }}
+        className="bg-[#ff9900] rounded-xl mx-auto mt-10 px-5 py-4 text-center"
+      >
+        <MaterialIcons
+          name={`${noOfInstructionShown !== instructionMessages.length ? 'navigate-next' : 'play-arrow'}`}
+          size={35}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default Instructions;

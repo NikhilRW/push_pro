@@ -1,11 +1,11 @@
 import '../global.css';
 import { NavigationContainer } from '@react-navigation/native';
-import RootStack from './navigation/RootStack';
+import RootStack from 'shared/navigation/RootStack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider } from 'shared/context/ThemeContext';
 import { StatusBar } from 'react-native';
-import { useTheme } from './context/ThemeContext';
-import { checkTimesAppOpenedPassedLimit } from './utils';
+import { useTheme } from 'shared/context/ThemeContext';
+import { checkTimesAppOpenedPassedLimit } from 'shared/utils/app-initialization';
 import { useEffect, useState } from 'react';
 
 const MainContent = () => {
