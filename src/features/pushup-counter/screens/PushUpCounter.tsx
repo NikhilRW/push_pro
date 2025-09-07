@@ -262,7 +262,10 @@ export default function PushUpCounter() {
   const handleSaveSession = useCallback(async () => {
     if (count > 0 && sessionDuration > 0) {
       try {
-        console.log('Attempting to save session:', { count, duration: sessionDuration });
+        console.log('Attempting to save session:', {
+          count,
+          duration: sessionDuration,
+        });
         const savedId = await savePushupLog(count, sessionDuration);
         console.log('Session saved successfully with ID:', savedId);
         setShowSaveModal(false);
@@ -358,12 +361,7 @@ export default function PushUpCounter() {
         visible={showSaveModal}
         onRequestClose={handleDiscardSession}
       >
-        <View
-          style={[
-            styles.modalContainer,
-            { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-          ]}
-        >
+        <View style={[styles.modalContainer]}>
           <View
             style={[
               styles.modalContent,
@@ -413,9 +411,7 @@ export default function PushUpCounter() {
                 ]}
                 onPress={handleSaveSession}
               >
-                <Text style={[styles.modalButtonText, { color: '#fff' }]}>
-                  Save
-                </Text>
+                <Text style={[styles.modalButtonText]}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -20,5 +20,6 @@ export const styles = StyleSheet.create({
     top: '49%',
     left: '50%',
     zIndex: 10,
+    columnGap: 1,
   },
 });

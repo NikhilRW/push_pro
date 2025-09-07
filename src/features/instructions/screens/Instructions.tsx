@@ -59,12 +59,12 @@ const Instructions = () => {
         ]}
       >
         <View style={styles.imageContainer}>
-          {/*<Video
+          <Video
             source={require('res/mp4s/doingpushup7.mp4')}
             style={styles.video}
             resizeMode="cover"
             repeat={true}
-          />*/}
+          />
         </View>
         <View style={styles.contentContainer}>
           <Text style={[styles.title, { color: theme.text.primary }]}>
@@ -112,7 +112,7 @@ const Instructions = () => {
         <MaterialIcons
           name={`${noOfInstructionShown !== instructionMessages.length ? 'navigate-next' : 'play-arrow'}`}
           size={30}
-          color={"white"}
+          color={'white'}
           style={styles.stepNavigationIcon}
         />
       </TouchableOpacity>

@@ -210,9 +210,10 @@ export const useThemedStyles = () => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      width:"100%",
-      height:"100%",
-      zIndex:50,
+      width: '100%',
+      height: '100%',
+      zIndex: 50,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
       margin: 20,
@@ -266,6 +267,7 @@ export const useThemedStyles = () => {
     modalButtonText: {
       fontSize: 16,
       fontWeight: 'bold',
+      color: '#fff',
     },
   });
 };

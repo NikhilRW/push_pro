@@ -32,7 +32,7 @@ const SplashScreen = () => {
     >
       {!videoLoaded && (
         <FastImage
-          style={{columnGap:1}}
+          style={styles.image}
           className=""
           source={require('res/pngs/pushpro3.png')}
           resizeMode="cover"
