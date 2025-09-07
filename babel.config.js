@@ -11,6 +11,7 @@ const plugins = [
         '@': './src',
         instructions: './src/features/instructions',
         'pushup-counter': './src/features/pushup-counter',
+        'pushup-history': './src/features/pushup-history',
         'splash-screen': './src/features/splash-screen',
         shared: './src/shared',
         res: './src/shared/res',

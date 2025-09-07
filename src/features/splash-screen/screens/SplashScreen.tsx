@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Video } from 'react-native-video';
 import { styles } from 'splash-screen/styles/SplashScreen';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { RootStackParamList } from 'shared/types/Navigation';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import FastImage from 'react-native-fast-image';
 const SplashScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const { params } =
+    useRoute<RouteProp<Record<string, RootStackParamList['Splash']>, string>>();
 
   useEffect(() => {
     setTimeout(() => {
-      navigation.navigate('PushupCounter', {});
+      navigation.navigate(
+        params.isLimitPassed ? 'PushupCounter' : 'Instructions',
+        {},
+      );
     }, 4000);
   });
 
@@ -22,7 +32,7 @@ const SplashScreen = () => {
     >
       {!videoLoaded && (
         <FastImage
-          style={styles.image}
+          style={{columnGap:1}}
           className=""
           source={require('res/pngs/pushpro3.png')}
           resizeMode="cover"

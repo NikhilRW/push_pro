@@ -1,4 +1,4 @@
-import { colors } from 'pushup-counter/constants/colors';
+import { colors } from 'shared/constants/colors';
 import { useTheme } from '@/shared/context/ThemeContext';
 
 export const useThemeColors = () => {

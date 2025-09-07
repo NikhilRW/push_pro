@@ -1,5 +1,8 @@
 export type RootStackParamList = {
-  Splash: {};
+  Splash: {
+    isLimitPassed: boolean;
+  };
   PushupCounter: {};
-  Instructions:{};
+  Instructions: {};
+  History: {};
 };

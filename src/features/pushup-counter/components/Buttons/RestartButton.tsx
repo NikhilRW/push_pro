@@ -1,5 +1,5 @@
 import NeuromorphicButton from './NeuromorphicButton';
-import { AccessibilityInfo, View } from 'react-native';
+import { View } from 'react-native';
 import React, { useMemo } from 'react';
 import { useVibrateOnPress } from 'pushup-counter/hooks/useVibrateOnPress';
 import { useThemeColors } from '@/shared/hooks/useThemeColors';

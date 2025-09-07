@@ -1,7 +1,10 @@
 import { Alert } from 'react-native';
-import { motivationalMessages } from 'pushup-counter/constants';
+import {
+  GROQ_TTS_API_URL,
+  motivationalMessages,
+} from 'pushup-counter/constants';
 import RNFS from 'react-native-fs';
-import { ELEVENLABS_API_KEY } from '@env';
+import { GROQ_API_KEY } from '@env';
 import Sound from 'react-native-sound';
 import { Buffer } from 'buffer';
 import { VolumeType } from 'pushup-counter/types/PushupCounter';
@@ -37,8 +40,8 @@ export const speakUsingElevenLabs = (
             differenceInCount === 5)
         ) {
           whenLastMessageIncluded.current.lastCount = count;
-          message =
-            `${toWords.convert(count)} ` +
+          // message =
+          `${toWords.convert(count)} ` +
             motivationalMessages[
               Math.floor(Math.random() * motivationalMessages.length)
             ];
@@ -47,28 +50,20 @@ export const speakUsingElevenLabs = (
           message = `${toWords.convert(count)}`;
           isMotivation = false;
         }
-        // Until Elevenlabs Api Works
-        throw new Error('');
-        const response = await fetch(
-          `https://api.elevenlabs.io//v1/text-to-speech/ZthjuvLPty3kTMaNKVKb?output_format=mp3_44100_128`,
-          {
-            method: 'POST',
-            headers: {
-              Accept: 'audio/mpeg',
-              'Content-Type': 'application/json',
-              'xi-api-key': ELEVENLABS_API_KEY,
-            },
-            body: JSON.stringify({
-              text: message,
-              model_id: 'eleven_multilingual_v2',
-              voice_settings: {
-                stability: 0.5,
-                similarity_boost: 0.5,
-              },
-            }),
+        console.log('Message to be sent:', message);
+        const response = await fetch(GROQ_TTS_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${GROQ_API_KEY}`,
           },
-        );
-        console.log(await response.json());
+          body: JSON.stringify({
+            model: 'playai-tts',
+            voice: 'Mikail-PlayAI',
+            input: message,
+            response_format: 'mp3',
+          }),
+        });
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const path = RNFS.DocumentDirectoryPath + `/audio${count}.mp3`;
@@ -110,19 +105,25 @@ export const speakUsingElevenLabs = (
           );
           return { sound: newSound, motivation: true };
         } else {
-          const sound = new Sound('audio' + count, Sound.MAIN_BUNDLE, error => {
-            if (error) {
-              console.log('Failed to load the sound', error);
-              return;
-            }
-            if (!isMotivationPlaying) {
-              sound.play();
-            }
-          });
-          return { sound: sound, motivation: false };
+          if (!isMotivationPlaying) {
+            const sound = new Sound(
+              'audio' + count,
+              Sound.MAIN_BUNDLE,
+              error => {
+                if (error) {
+                  console.log('Failed to load the sound', error);
+                  return;
+                }
+                sound.play();
+              },
+            );
+            return { sound: sound, motivation: false };
+          }
+          return null;
         }
       }
     } catch (err) {
+      console.error('Speak Count error', err);
       Tts.getInitStatus().then(success => {
         if (success) {
           Tts.speak(count.toString());

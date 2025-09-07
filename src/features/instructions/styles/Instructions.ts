@@ -32,7 +32,7 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 20,
   },
-  image: {
+  video: {
     width: '100%',
     height: '100%',
   },
@@ -61,5 +61,8 @@ export const styles = StyleSheet.create({
   instructionText: {
     fontSize: 12,
     flex: 1,
+  },
+  stepNavigationIcon: {
+    paddingTop: 2.5,
   },
 });

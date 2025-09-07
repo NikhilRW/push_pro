@@ -59,6 +59,7 @@ export const useThemedStyles = () => {
       height: '8%',
       marginHorizontal: 'auto',
       marginTop: 16,
+      position: 'relative',
     },
     headerBox: {
       width: '100%',
@@ -77,10 +78,10 @@ export const useThemedStyles = () => {
     stateRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       position: 'absolute',
       top: '50%',
-      left: '50%',
+      left: '45%',
       transform: [
         {
           translateX: '-50%',
@@ -165,11 +166,11 @@ export const useThemedStyles = () => {
       transform: [{ translateX: '1.8%' }],
       marginHorizontal: 'auto',
       justifyContent: 'center',
-      gap: '7%',
-      height: '100%',
+      gap: '6%',
+      // height: '100%',
     },
     buttonHint: {
-      color: isDark ? '#838A98' : '#5A5A5A',
+      color: isDark ? '#A2A7B1' : '#5A5A5A',
       fontSize: 11,
       textAlign: 'center',
     },
@@ -204,6 +205,67 @@ export const useThemedStyles = () => {
       borderColor: '#f5f8fa',
       // Inner shadow simulation (Android workaround)
       overflow: 'visible',
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width:"100%",
+      height:"100%",
+      zIndex:50,
+    },
+    modalContent: {
+      margin: 20,
+      borderRadius: 10,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      width: '80%',
+      maxWidth: 300,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    modalText: {
+      fontSize: 16,
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    modalStats: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      textAlign: 'center',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    modalButton: {
+      borderRadius: 8,
+      padding: 12,
+      flex: 1,
+      alignItems: 'center',
+    },
+    cancelButton: {
+      marginRight: 5,
+    },
+    saveButton: {
+      marginLeft: 5,
+    },
+    modalButtonText: {
+      fontSize: 16,
+      fontWeight: 'bold',
     },
   });
 };

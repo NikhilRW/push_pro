@@ -5,7 +5,14 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { View, Text, AccessibilityInfo } from 'react-native';
+import {
+  View,
+  Text,
+  AccessibilityInfo,
+  Modal,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
 import { useThemedStyles } from 'pushup-counter/styles/PushUpCounter';
 import {
@@ -41,8 +48,8 @@ import Header from 'pushup-counter/components/Common/Header';
 import DebugCard from 'pushup-counter/components/Card/DebugCard';
 import ControlButtons from 'pushup-counter/components/Buttons/ControlButtons';
 import useRequestCameraWithRationale from 'pushup-counter/hooks/useRequestCameraWithRationale';
+import { useDatabase } from 'shared/context/DatabaseContext';
 import IncrementButton from '../components/Buttons/IncrementButton';
-import { useStoragePermission } from '../hooks/useStoragePermission';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
@@ -54,9 +61,13 @@ export default function PushUpCounter() {
   const [isActive, setIsActive] = useState(false);
   const [lastFaceY, setLastFaceY] = useState(0);
   const [volume, setVolume] = useState<'mute' | 'high' | 'low'>('low');
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [sessionDuration, setSessionDuration] = useState(0);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const { savePushupLog } = useDatabase();
 
   const whenLastMessageIncluded = useRef<{ lastCount: number }>({
-    lastCount: 1,
+    lastCount: 0,
   });
   const debugMode = false;
   const sound = useRef<{ sound: Sound | null; motivation: boolean }>({
@@ -101,9 +112,33 @@ export default function PushUpCounter() {
   }, [count, animatedOpacity]);
 
   useEffect(() => {
+    // For Intilization After Component Rendered First Time.
+    animateOpacity(animatedOpacity);
+  }, [animatedOpacity]);
+
+  useEffect(() => {
     animatePulseFunc();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Session timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isActive && sessionStartTime) {
+      interval = setInterval(() => {
+        setSessionDuration(Math.floor((Date.now() - sessionStartTime) / 1000));
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isActive, sessionStartTime]);
+
+  // Show save modal when reset button is clicked and there are pushups logged
 
   const {
     bufferIndex,
@@ -123,7 +158,6 @@ export default function PushUpCounter() {
   const deviceFormat = device!.formats.find(findVideoFormat);
   const videoHeight = deviceFormat?.videoHeight!;
   const { hasPermission, requestPermission } = useCameraPermission();
-  const { hasStoragePermission, requestStoragePermission } = useStoragePermission();
   const { requestCameraWithRationale } =
     useRequestCameraWithRationale(requestPermission);
 
@@ -142,39 +176,38 @@ export default function PushUpCounter() {
 
   useEffect(() => {
     const main = async () => {
-    if (count !== whenLastMessageIncluded.current.lastCount) {
-      if(await AccessibilityInfo.isAccessibilityServiceEnabled()){
-        annouceCountAfterChange(volume==='mute'?'high':volume, count, sound, whenLastMessageIncluded);
-      }
-      else{
+      if (await AccessibilityInfo.isAccessibilityServiceEnabled()) {
+        annouceCountAfterChange(
+          volume === 'mute' ? 'high' : volume,
+          count,
+          sound,
+          whenLastMessageIncluded,
+        );
+      } else {
         annouceCountAfterChange(volume, count, sound, whenLastMessageIncluded);
       }
-    }
-    }
+    };
     main();
   }, [count, volume]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const main = async () => {
-      const screenReaderEnabled =  await AccessibilityInfo.isScreenReaderEnabled();
-    if(screenReaderEnabled){
-      AccessibilityInfo.announceForAccessibility('Push-up counter screen')
-    }
-    }
+      const screenReaderEnabled =
+        await AccessibilityInfo.isScreenReaderEnabled();
+      if (screenReaderEnabled) {
+        AccessibilityInfo.announceForAccessibility('Push-up counter screen');
+      }
+    };
     main();
-  },[]);
+  }, []);
 
   useEffect(() => {
     (async () => {
       if (!hasPermission) {
         requestCameraWithRationale();
       }
-      if(!hasStoragePermission){
-        requestStoragePermission();
-      }
-      
     })();
-  }, [hasPermission, hasStoragePermission, requestCameraWithRationale, requestPermission, requestStoragePermission]);
+  }, [hasPermission, requestCameraWithRationale, requestPermission]);
 
   const frameProcessor = usePushupFrameProcessor({
     faceDetector,
@@ -194,6 +227,8 @@ export default function PushUpCounter() {
     setCount(0);
     setCurrentState('ready');
     setLastFaceY(0);
+    setSessionStartTime(null);
+    setSessionDuration(0);
     setBufferInfo({
       bufferSize: 0,
       currentPattern: 'none',
@@ -208,23 +243,74 @@ export default function PushUpCounter() {
   }, [bufferIndex, faceYBuffer, lastAnalysisTime, lastFaceDisappearedTime]);
 
   const toggleActive = useCallback(() => {
-    setIsActive(prev => !prev);
-  }, []);
+    setIsActive(prev => {
+      const newIsActive = !prev;
+
+      if (newIsActive && !sessionStartTime) {
+        // Starting a new session
+        setSessionStartTime(Date.now());
+        setSessionDuration(0);
+      } else if (!newIsActive && sessionStartTime) {
+        // Ending a session
+        // Duration is already being tracked by the useEffect
+      }
+
+      return newIsActive;
+    });
+  }, [sessionStartTime]);
+
+  const handleSaveSession = useCallback(async () => {
+    if (count > 0 && sessionDuration > 0) {
+      try {
+        console.log('Attempting to save session:', { count, duration: sessionDuration });
+        const savedId = await savePushupLog(count, sessionDuration);
+        console.log('Session saved successfully with ID:', savedId);
+        setShowSaveModal(false);
+        resetCounter();
+      } catch (error) {
+        console.error('Error saving session:', error);
+        // Show error to user
+        Alert.alert('Save Error', 'Failed to save session. Please try again.');
+      }
+    }
+  }, [count, sessionDuration, savePushupLog, resetCounter]);
+
+  const handleDiscardSession = useCallback(() => {
+    setShowSaveModal(false);
+    resetCounter();
+  }, [resetCounter]);
 
   const pulseAnimatedStyle = useAnimatedStyle(
     getAnimatedPulseStyle(pulseOpacity),
     [pulseOpacity],
   );
+  const handleResetWithModal = useCallback(() => {
+    if (count > 0 && sessionDuration > 0) {
+      setShowSaveModal(true);
+    } else {
+      resetCounter();
+    }
+  }, [count, resetCounter, sessionDuration]);
 
   const controlButtonsProps = useMemo(
     () => ({
       isActive,
-      resetCounter,
+      resetCounter: handleResetWithModal,
       setVolume,
       toggleActive,
       volume,
+      showSaveButton: false, // Modal handles save functionality
+      onSave: handleSaveSession,
+      sessionDuration,
     }),
-    [isActive, resetCounter, setVolume, toggleActive, volume],
+    [
+      isActive,
+      handleResetWithModal,
+      toggleActive,
+      volume,
+      handleSaveSession,
+      sessionDuration,
+    ],
   );
 
   if (!device || !hasPermission) {
@@ -264,6 +350,77 @@ export default function PushUpCounter() {
       <IncrementButton onPress={incrementCount} />
       {/* Control Buttons */}
       <ControlButtons {...controlButtonsProps} />
+
+      {/* Save Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showSaveModal}
+        onRequestClose={handleDiscardSession}
+      >
+        <View
+          style={[
+            styles.modalContainer,
+            { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+          ]}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: themeColors.history.cardBackground },
+            ]}
+          >
+            <Text
+              style={[styles.modalTitle, { color: themeColors.text.primary }]}
+            >
+              Save Session?
+            </Text>
+            <Text
+              style={[styles.modalText, { color: themeColors.text.secondary }]}
+            >
+              Do you want to save this session?
+            </Text>
+            <Text
+              style={[styles.modalStats, { color: themeColors.text.primary }]}
+            >
+              Pushups: {count} | Duration: {sessionDuration}s
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.cancelButton,
+                  { backgroundColor: themeColors.border },
+                ]}
+                onPress={handleDiscardSession}
+              >
+                <Text
+                  style={[
+                    styles.modalButtonText,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Discard
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  styles.saveButton,
+                  { backgroundColor: themeColors.primary },
+                ]}
+                onPress={handleSaveSession}
+              >
+                <Text style={[styles.modalButtonText, { color: '#fff' }]}>
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
