@@ -48,6 +48,10 @@ export const colors = {
         date: '#6B7280',
         duration: '#10B981',
       },
+      deleteIcon: {
+        color: '#D85E5E',
+        backgroundColor: 'rgba(216, 94, 94, 0.2)',
+      },
     },
     controlButtonContainer: {
       bgColor: '#000B25',
@@ -131,6 +135,10 @@ export const colors = {
         count: '#2563EB',
         date: '#64748B',
         duration: '#059669',
+      },
+      deleteIcon: {
+        color: '#DC2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.2)',
       },
     },
     controlButtonContainer: {

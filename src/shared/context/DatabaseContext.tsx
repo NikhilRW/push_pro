@@ -8,7 +8,7 @@ import React, {
 import databaseService from '../services/database';
 import { PushupLog, DatabaseStats, PushupSummary } from '../types/database';
 
-interface DatabaseContextType {
+interface DatabaseContextType { 
   // Database state
   isInitialized: boolean;
   isLoading: boolean;

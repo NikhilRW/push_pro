@@ -6,15 +6,23 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
+import { Alert } from 'react-native';
 import { useDatabase } from 'shared/context/DatabaseContext';
 import { PushupLog } from 'shared/types/database';
 import { format } from 'date-fns';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
 import { styles } from 'pushup-history/styles/History';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 
 const History: React.FC = () => {
-  const { pushupLogs, databaseStats, isLoading, error, refreshData } =
-    useDatabase();
+  const {
+    pushupLogs,
+    databaseStats,
+    isLoading,
+    error,
+    refreshData,
+    deletePushupLog,
+  } = useDatabase();
   const themeColors = useThemeColors();
 
   useEffect(() => {
@@ -32,6 +40,24 @@ const History: React.FC = () => {
     return format(new Date(dateString), 'MMM dd, yyyy');
   };
 
+  const handleDeleteLog = async (id: number) => {
+    Alert.alert(
+      'Delete Log',
+      'Are you sure you want to delete this pushup log?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          onPress: async () => {
+            await deletePushupLog(id);
+            refreshData();
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
   const renderLogItem = ({ item }: { item: PushupLog }) => (
     <View
       style={[
@@ -40,6 +66,19 @@ const History: React.FC = () => {
       ]}
     >
       <View style={styles.logContent}>
+        <TouchableOpacity
+          onPress={() => handleDeleteLog(item.id)}
+          style={[
+            styles.deleteButton,
+            { backgroundColor: themeColors.history.deleteIcon.backgroundColor },
+          ]}
+        >
+          <MaterialIcons
+            name="delete-outline"
+            color={themeColors.history.deleteIcon.color}
+            size={20}
+          />
+        </TouchableOpacity>
         <Text
           style={[styles.dateText, { color: themeColors.history.text.date }]}
         >
@@ -61,7 +100,7 @@ const History: React.FC = () => {
                 { color: themeColors.history.text.count },
               ]}
             >
-              {item.count}
+              {item.pushup_count}
             </Text>
           </View>
           <View style={styles.statItem}>
@@ -158,7 +197,7 @@ const History: React.FC = () => {
                 { color: themeColors.history.achievement },
               ]}
             >
-              {databaseStats.currentStreak}
+              {databaseStats.averagePerSession}
             </Text>
             <Text
               style={[
@@ -166,7 +205,7 @@ const History: React.FC = () => {
                 { color: themeColors.history.text.secondary },
               ]}
             >
-              Current Streak
+              Average Pushups
             </Text>
           </View>
           <View
@@ -181,7 +220,7 @@ const History: React.FC = () => {
                 { color: themeColors.history.achievement },
               ]}
             >
-              {databaseStats.longestStreak}
+              {databaseStats.maxPushupCount}
             </Text>
             <Text
               style={[
@@ -189,7 +228,7 @@ const History: React.FC = () => {
                 { color: themeColors.history.text.secondary },
               ]}
             >
-              Longest Streak
+              Max Pushups
             </Text>
           </View>
         </View>

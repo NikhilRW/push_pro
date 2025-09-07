@@ -48,16 +48,16 @@ export const getAllPushupLogs = async (db: SQLiteDatabase): Promise<PushupLog[]>
     const logs: PushupLog[] = [];
 
     // Handle empty database gracefully
-    if (!result || !result.rows || result.rows.length === 0) {
+    if (!result || !result[0].rows || result[0].rows.length === 0) {
       return [];
     }
 
-    for (let i = 0; i < result.rows.length; i++) {
-      const row = result.rows.item(i);
+    for (let i = 0; i < result[0].rows.length; i++) {
+      const row = result[0].rows.item(i);
       logs.push({
         id: row.id,
         date: row.date,
-        pushup_count: row.count,
+        pushup_count: row.pushup_count,
         duration: row.duration,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -87,12 +87,12 @@ export const getPushupLogsByDate = async (
     const result = await db.executeSql(selectQuery, [date]);
     const logs: PushupLog[] = [];
 
-    for (let i = 0; i < result.rows.length; i++) {
-      const row = result.rows.item(i);
+    for (let i = 0; i < result[0].rows.length; i++) {
+      const row = result[0].rows.item(i);
       logs.push({
         id: row.id,
         date: row.date,
-        pushup_count: row.count,
+        pushup_count: row.pushup_count,
         duration: row.duration,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -125,8 +125,8 @@ export const getPushupSummaryByDate = async (
   try {
     const result = await db.executeSql(selectQuery, [date]);
 
-    if (result.rows.length > 0) {
-      const row = result.rows.item(0);
+    if (result[0].rows.length > 0) {
+      const row = result[0].rows.item(0);
       return {
         date: row.date,
         totalCount: row.totalCount,
@@ -161,8 +161,8 @@ export const getDatabaseStats = async (db: SQLiteDatabase): Promise<DatabaseStat
     let averagePerSession = 0;
     let longestSession = 0;
 
-    if (totalResult && totalResult.rows && totalResult.rows.length > 0) {
-      const totals = totalResult.rows.item(0);
+    if (totalResult && totalResult[0].rows && totalResult[0].rows.length > 0) {
+      const totals = totalResult[0].rows.item(0);
       totalPushups = totals.totalPushups || 0;
       totalSessions = totals.totalSessions || 0;
       averagePerSession = totals.averagePerSession || 0;
@@ -184,7 +184,7 @@ export const getDatabaseStats = async (db: SQLiteDatabase): Promise<DatabaseStat
     const today = new Date().toISOString().split('T')[0];
 
     // Handle empty streak data gracefully
-    if (!streakResult || !streakResult.rows || streakResult.rows.length === 0) {
+    if (!streakResult || !streakResult[0].rows || streakResult[0].rows.length === 0) {
       return {
         totalPushups: totalPushups || 0,
         totalSessions: totalSessions || 0,
@@ -195,8 +195,8 @@ export const getDatabaseStats = async (db: SQLiteDatabase): Promise<DatabaseStat
       };
     }
 
-    for (let i = 0; i < streakResult.rows.length; i++) {
-      const row = streakResult.rows.item(i);
+    for (let i = 0; i < streakResult[0].rows.length; i++) {
+      const row = streakResult[0].rows.item(i);
       const currentDate = new Date(row.date);
 
       if (lastDate === null) {

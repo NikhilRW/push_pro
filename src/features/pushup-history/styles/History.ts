@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -56,7 +56,8 @@ export const styles = StyleSheet.create({
     elevation: 5,
   },
   logContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
   },
   dateText: {
     fontSize: 16,
@@ -77,6 +78,20 @@ export const styles = StyleSheet.create({
   statValue: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    borderRadius: 15,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   emptyContainer: {
     flex: 1,

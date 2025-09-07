@@ -6,9 +6,9 @@ SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
 const DATABASE_NAME = 'pushup.db';
-const DATABASE_VERSION = '1.0';
-const DATABASE_DISPLAY_NAME = 'Pushup Tracker Database';
-const DATABASE_SIZE = 200000; // 200KB
+// const DATABASE_VERSION = '1.0';
+// const DATABASE_DISPLAY_NAME = 'Pushup Tracker Database';
+// const DATABASE_SIZE = 200000; // 200KB
 
 class DatabaseService {
   private database: SQLite.SQLiteDatabase | null = null;
@@ -19,7 +19,7 @@ class DatabaseService {
       console.log('Initializing database...');
       this.database = await SQLite.openDatabase({
         name: DATABASE_NAME,
-        location: 'default',
+        createFromLocation: 1,
       });
 
       await this.createTables();
@@ -92,7 +92,7 @@ class DatabaseService {
 
       console.log('Insert result:', result);
 
-      const insertId = result[0].insertId || result[0].rowsAffected;
+      const insertId = result.insertId || result.rowsAffected;
       console.log('Pushup log inserted successfully:', insertId);
 
       // Verify the insertion by fetching the latest log
@@ -126,26 +126,13 @@ class DatabaseService {
 
     try {
       const result = await this.database.executeSql(selectQuery);
-      const logs: PushupLog[] = [];
 
       // Handle empty database gracefully
-      if (!result || !result.rows || result.rows.length === 0) {
+      if (!result || !result[0].rows || result[0].rows.length === 0) {
         return [];
       }
-
-      for (let i = 0; i < result.rows.length; i++) {
-        const row = result.rows.item(i);
-        logs.push({
-          id: row.id,
-          date: row.date,
-          pushup_count: row.count,
-          duration: row.duration,
-          created_at: row.created_at,
-          updated_at: row.updated_at,
-        });
-      }
-
-      return logs;
+      const allPushupLogs = result[0].rows.raw();
+      return allPushupLogs;
     } catch (error) {
       console.error('Error getting pushup logs:', error);
       throw error;
@@ -169,12 +156,12 @@ class DatabaseService {
       const result = await this.database.executeSql(selectQuery, [date]);
       const logs: PushupLog[] = [];
 
-      for (let i = 0; i < result.rows.length; i++) {
-        const row = result.rows.item(i);
+      for (let i = 0; i < result[0].rows.length; i++) {
+        const row = result[0].rows.item(i);
         logs.push({
           id: row.id,
           date: row.date,
-          pushup_count: row.count,
+          pushup_count: row.pushup_count,
           duration: row.duration,
           created_at: row.created_at,
           updated_at: row.updated_at,
@@ -238,7 +225,8 @@ class DatabaseService {
           SUM(pushup_count) as totalPushups,
           COUNT(*) as totalSessions,
           AVG(pushup_count) as averagePerSession,
-          MAX(duration) as longestSession
+          MAX(duration) as longestSession,
+          MAX(pushup_count) as maxPushupCount
         FROM pushup_logs
       `);
       console.log('totalResult', totalResult);
@@ -248,47 +236,50 @@ class DatabaseService {
       let totalSessions = 0;
       let averagePerSession = 0;
       let longestSession = 0;
+      let maxPushupCount = 0;
 
-      if (totalResult && totalResult.rows && totalResult.rows.length > 0) {
-        const totals = totalResult.rows.item(0);
+      if (
+        totalResult &&
+        totalResult[0].rows &&
+        totalResult[0].rows.raw().length > 0
+      ) {
+        const totals = totalResult[0].rows.raw()[0];
+        console.log('totals', totals);
         totalPushups = totals.totalPushups || 0;
         totalSessions = totals.totalSessions || 0;
         averagePerSession = totals.averagePerSession || 0;
         longestSession = totals.longestSession || 0;
+        maxPushupCount = totals.maxPushupCount || 0;
       }
 
-      // Get streak data
+      // Get longest streak data
       const streakResult = await this.database.executeSql(`
         SELECT date FROM pushup_logs
         GROUP BY date
         ORDER BY date DESC
       `);
 
-      let currentStreak = 0;
       let longestStreak = 0;
       let tempStreak = 0;
       let lastDate = null;
 
-      const today = new Date().toISOString().split('T')[0];
-
       // Handle empty streak data gracefully
       if (
         !streakResult ||
-        !streakResult.rows ||
-        streakResult.rows.length === 0
+        !streakResult[0].rows ||
+        streakResult[0].rows.raw().length === 0
       ) {
         return {
           totalPushups: totalPushups || 0,
           totalSessions: totalSessions || 0,
           averagePerSession: Math.round(averagePerSession || 0),
           longestSession: longestSession || 0,
-          currentStreak: 0,
           longestStreak: 0,
+          maxPushupCount,
         };
       }
-
-      for (let i = 0; i < streakResult.rows.length; i++) {
-        const row = streakResult.rows.item(i);
+      for (let i = 0; i < streakResult[0].rows.raw().length; i++) {
+        const row = streakResult[0].rows.raw()[i];
         const currentDate = new Date(row.date);
 
         if (lastDate === null) {
@@ -316,36 +307,13 @@ class DatabaseService {
 
       longestStreak = Math.max(longestStreak, tempStreak);
 
-      // Check if today is part of current streak
-      try {
-        const todayLogs = await this.getPushupLogsByDate(today);
-        if (todayLogs && todayLogs.length > 0) {
-          currentStreak = tempStreak;
-        } else {
-          // Check if yesterday was part of streak
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayStr = yesterday.toISOString().split('T')[0];
-          const yesterdayLogs = await this.getPushupLogsByDate(yesterdayStr);
-
-          if (yesterdayLogs && yesterdayLogs.length > 0) {
-            currentStreak = tempStreak;
-          } else {
-            currentStreak = 0;
-          }
-        }
-      } catch (error) {
-        console.warn('Error checking streak dates:', error);
-        currentStreak = 0;
-      }
-
       return {
         totalPushups: totalPushups || 0,
         totalSessions: totalSessions || 0,
         averagePerSession: Math.round(averagePerSession || 0),
         longestSession: longestSession || 0,
-        currentStreak,
         longestStreak,
+        maxPushupCount,
       };
     } catch (error) {
       console.error('Error getting database stats:', error);
