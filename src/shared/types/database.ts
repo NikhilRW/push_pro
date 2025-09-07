@@ -13,7 +13,7 @@ export interface DatabaseStats {
   totalSessions: number;
   averagePerSession: number;
   longestSession: number;
-
+  maxPushupCount: number;
   longestStreak: number;
 }
 

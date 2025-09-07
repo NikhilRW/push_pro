@@ -5,14 +5,7 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import {
-  View,
-  Text,
-  AccessibilityInfo,
-  Modal,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, AccessibilityInfo, Alert } from 'react-native';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
 import { useThemedStyles } from 'pushup-counter/styles/PushUpCounter';
 import {
@@ -49,6 +42,7 @@ import DebugCard from 'pushup-counter/components/Card/DebugCard';
 import ControlButtons from 'pushup-counter/components/Buttons/ControlButtons';
 import useRequestCameraWithRationale from 'pushup-counter/hooks/useRequestCameraWithRationale';
 import { useDatabase } from 'shared/context/DatabaseContext';
+import SaveConfirmationModal from '../components/Common/SaveConfirmationModal';
 // import IncrementButton from '../components/Buttons/IncrementButton';
 
 export default function PushUpCounter() {
@@ -355,68 +349,13 @@ export default function PushUpCounter() {
       <ControlButtons {...controlButtonsProps} />
 
       {/* Save Confirmation Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showSaveModal}
-        onRequestClose={handleDiscardSession}
-      >
-        <View style={[styles.modalContainer]}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: themeColors.history.cardBackground },
-            ]}
-          >
-            <Text
-              style={[styles.modalTitle, { color: themeColors.text.primary }]}
-            >
-              Save Session?
-            </Text>
-            <Text
-              style={[styles.modalText, { color: themeColors.text.secondary }]}
-            >
-              Do you want to save this session?
-            </Text>
-            <Text
-              style={[styles.modalStats, { color: themeColors.text.primary }]}
-            >
-              Pushups: {count} | Duration: {sessionDuration}s
-            </Text>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.cancelButton,
-                  { backgroundColor: themeColors.border },
-                ]}
-                onPress={handleDiscardSession}
-              >
-                <Text
-                  style={[
-                    styles.modalButtonText,
-                    { color: themeColors.text.primary },
-                  ]}
-                >
-                  Discard
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  styles.saveButton,
-                  { backgroundColor: themeColors.primary },
-                ]}
-                onPress={handleSaveSession}
-              >
-                <Text style={[styles.modalButtonText]}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <SaveConfirmationModal
+        showSaveModal={showSaveModal}
+        handleDiscardSession={handleDiscardSession}
+        handleSaveSession={handleSaveSession}
+        count={count}
+        sessionDuration={sessionDuration}
+      />
     </View>
   );
 }
