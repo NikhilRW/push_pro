@@ -40,6 +40,7 @@ const History: React.FC = () => {
     return format(new Date(dateString), 'MMM dd, yyyy');
   };
 
+
   const handleDeleteLog = async (id: number) => {
     Alert.alert(
       'Delete Log',
@@ -68,10 +69,7 @@ const History: React.FC = () => {
       <View style={styles.logContent}>
         <TouchableOpacity
           onPress={() => handleDeleteLog(item.id)}
-          style={[
-            styles.deleteButton,
-            { backgroundColor: themeColors.history.deleteIcon.backgroundColor },
-          ]}
+          style={[styles.deleteButton, { backgroundColor: themeColors.history.deleteIcon.backgroundColor }]}
         >
           <MaterialIcons
             name="delete-outline"

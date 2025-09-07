@@ -49,7 +49,7 @@ import DebugCard from 'pushup-counter/components/Card/DebugCard';
 import ControlButtons from 'pushup-counter/components/Buttons/ControlButtons';
 import useRequestCameraWithRationale from 'pushup-counter/hooks/useRequestCameraWithRationale';
 import { useDatabase } from 'shared/context/DatabaseContext';
-import IncrementButton from '../components/Buttons/IncrementButton';
+// import IncrementButton from '../components/Buttons/IncrementButton';
 
 export default function PushUpCounter() {
   const insets = useSafeAreaInsets();
@@ -350,7 +350,7 @@ export default function PushUpCounter() {
       {/* Status Card */}
       {debugMode && <DebugCard bufferInfo={bufferInfo} lastFaceY={lastFaceY} />}
 
-      <IncrementButton onPress={incrementCount} />
+      {/* <IncrementButton onPress={incrementCount} /> */}
       {/* Control Buttons */}
       <ControlButtons {...controlButtonsProps} />
 

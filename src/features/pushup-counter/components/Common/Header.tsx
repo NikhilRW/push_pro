@@ -3,13 +3,14 @@ import React from 'react';
 import {
   Canvas,
   Group,
-  // rect,
-  // RoundedRect,
-  // rrect,
+  rect,
+  RoundedRect,
+  rrect,
+  Shadow,
 } from '@shopify/react-native-skia';
 import { useThemedStyles } from 'pushup-counter/styles/PushUpCounter';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
-// import { height, width } from 'pushup-counter/constants';
+import { height, width } from 'pushup-counter/constants';
 import Animated from 'react-native-reanimated';
 import { newGetStateColor, newGetStateText } from 'pushup-counter/utils';
 import { useTheme } from '@/shared/context/ThemeContext';
@@ -18,13 +19,13 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/shared/types';
 import { headerStyles } from '../../styles/Header';
 
-// const BORDER_WIDTH = 3;
+const BORDER_WIDTH = 1.1;
 
-// const roundedRect = rrect(
-//   rect(BORDER_WIDTH / 2, BORDER_WIDTH / 2, width * 0.93, height * 0.074),
-//   30,
-//   30,
-// );
+const roundedRect = rrect(
+  rect(BORDER_WIDTH / 2, BORDER_WIDTH / 2, width * 0.93, height * 0.074),
+  30,
+  30,
+);
 
 const Header = ({
   pulseAnimatedStyle,
@@ -48,7 +49,7 @@ const Header = ({
   return (
     <View style={styles.headerContainer}>
       <Canvas style={styles.headerBox}>
-        {/* {isDark && (
+        {isDark && (
           <Group
             strokeWidth={BORDER_WIDTH}
             style={'stroke'}
@@ -56,24 +57,24 @@ const Header = ({
           >
             <RoundedRect rect={roundedRect} />
           </Group>
-        )} */}
+        )}
         <Group>
-          {/* <RoundedRect color={themeColors.header.bgColor} rect={roundedRect} /> */}
+          <RoundedRect color={themeColors.header.bgColor} rect={roundedRect} />
           {/* For Nueromorphic Effect */}
-          {/* <Shadow
-            dx={12}
-            dy={10}
+          <Shadow
+            dx={6}
+            dy={5}
             color={themeColors.shadow.innerTopLeft}
             blur={10}
             inner
           />
           <Shadow
-            dx={-12}
-            dy={-10}
+            dx={-6}
+            dy={-5}
             color={themeColors.shadow.innerBottomRight}
             blur={10}
             inner
-          /> */}
+          />
         </Group>
       </Canvas>
       <View style={styles.stateRow}>
@@ -99,12 +100,12 @@ const Header = ({
           {newGetStateText(currentState)}
         </Text>
       </View>
-      <View style={headerStyles.header}>
+      <View style={headerStyles.historyButton}>
         <AntDesign
           onPress={handleHistoryPress}
           name="history"
-          size={20}
-          color={isDark ? '#A4A4A4' : '#222'}
+          size={17}
+          color={isDark ? '#00C5FC' : '#222'}
           className="rounded-2xl dark:bg-blue-900 bg-blue-400"
         />
       </View>

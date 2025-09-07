@@ -20,7 +20,7 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
-import { useTheme } from 'shared/context/ThemeContext';
+// import { useTheme } from 'shared/context/ThemeContext';
 
 type NeuromorphicButtonProps = {
   width: number;
@@ -91,7 +91,7 @@ const NeuromorphicButton = ({
   };
 
   const themeColors = useThemeColors();
-  const { isDark } = useTheme();
+  // const { isDark } = useTheme();
   const canvasStyle = useMemo(() => ({ width, height }), [width, height]);
   return (
     <Canvas
@@ -99,22 +99,22 @@ const NeuromorphicButton = ({
       onTouchStart={onPressedInHandler}
       onTouchEnd={onPressedOutHandler}
     >
-      {isDark && (
+      {/* {isDark && (
         <Group
-          strokeWidth={2}
+          strokeWidth={1}
           style={'stroke'}
-          color={themeColors.controlButton.borderColor}
+          color={baseColor}
         >
           <RoundedRect rect={roundedRectangle1} />
         </Group>
-      )}
+      )} */}
       <Group>
         <RoundedRect rect={roundedRectangle1} color={baseColor} opacity={1} />
         <Shadow
           blur={9}
           inner
-          dy={top_left_dy}
-          dx={top_left_dx}
+          dy={top_left_dy }
+          dx={top_left_dx }
           color={themeColors.controlButton.shadow.topLeft}
         />
         <Shadow
@@ -123,8 +123,8 @@ const NeuromorphicButton = ({
           dy={bottom_right_dy}
           dx={bottom_right_dx}
           color={themeColors.controlButton.shadow.bottomRight}
-        />
-        {/* For Neuromorphic Shadows */}
+        /> 
+        {/* For Neuromorphic Shadows
         {/* <Shadow blur={3} dy={0} dx={0} color={'rgba(255,255,255,0.08)'} />
         <Shadow blur={3} dy={0} dx={0} color={'rgba(0,0,0,0.2)'} /> */}
       </Group>

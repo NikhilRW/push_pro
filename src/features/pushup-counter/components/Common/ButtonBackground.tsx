@@ -7,6 +7,7 @@ import {
   rect,
   RoundedRect,
   rrect,
+  Shadow,
 } from '@shopify/react-native-skia';
 import { useThemedStyles } from 'pushup-counter/styles/PushUpCounter';
 import { useTheme } from '@/shared/context/ThemeContext';
@@ -30,7 +31,7 @@ const ButtonBackground = () => {
     <Canvas style={[styles.flex_1]}>
       {isDark && (
         <Group
-          strokeWidth={4}
+          strokeWidth={2}
           style={'stroke'}
           color={themeColors.controlButtonContainer.borderColor}
         >
@@ -44,25 +45,25 @@ const ButtonBackground = () => {
           rect={roundedRect}
         />
         {/* For Extreme Neuromorphic Effect */}
-        {/* <Shadow
+        <Shadow
           dx={4.5}
           dy={4.5}
           color={themeColors.controlButtonContainer.shadow.inner.topLeft}
-          blur={1}
+          blur={5}
           inner
         />
-        <Shadow
+        {/* <Shadow
           dx={-4.5}
           dy={-4.5}
           color={themeColors.controlButtonContainer.shadow.outer.topLeft}
           blur={5}
-        />
+        /> */}
         <Shadow
           dx={7}
           dy={7}
           color={themeColors.controlButtonContainer.shadow.inner.bottomRight}
-          blur={4}
-        /> */}
+          blur={5}
+        />
       </Group>
     </Canvas>
   );

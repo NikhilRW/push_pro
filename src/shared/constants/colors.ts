@@ -55,7 +55,7 @@ export const colors = {
     },
     controlButtonContainer: {
       bgColor: '#000B25',
-      borderColor: '#16213D',
+      borderColor: '#1E305F',
       shadow: {
         inner: {
           topLeft: 'rgba(24,33,54,0.9)',
