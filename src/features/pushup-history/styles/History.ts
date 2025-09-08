@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     padding: 16,
   },
   headerContainer: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
   headerTitle: {
     fontSize: 28,
@@ -31,9 +31,9 @@ export const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
   },
   statCardValue: {
     fontSize: 24,
@@ -51,9 +51,9 @@ export const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
   },
   logContent: {
     paddingHorizontal: 16,
@@ -127,5 +127,20 @@ export const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  headerTitleContainer: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+
+
+  },
+  headerIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    marginBottom:8.5,
   },
 });

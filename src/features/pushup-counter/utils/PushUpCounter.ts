@@ -17,7 +17,6 @@ export const analyzeBufferPattern = (
   'worklet';
 
   // Early exit for insufficient data
-  // TODO: Testing The Different Buffer Length
   if (buffer.length < 12) {
     return { found: false, confidence: 0, pattern: 'insufficient_data' };
   }
@@ -68,8 +67,14 @@ export const analyzeBufferPattern = (
   // Calculate range
   const range = maxY - minY;
 
+  // Define responsive thresholds based on video height
+  const MIN_RANGE_THRESHOLD = _videoHeight * 0.1; // Example: 10% of video height
+  const MIN_UPWARD_MOVEMENT_THRESHOLD = _videoHeight * 0.04; // Example: 4% of video height
+  const MAX_RETURN_MOVEMENT_THRESHOLD = _videoHeight * 0.08; // Example: 8% of video height
+  const RETURN_TO_START_TOLERANCE = _videoHeight * 0.13; // Example: 13% of video height
+
   // Early exit for insufficient movement - increased threshold for head movements
-  if (range < 60) {
+  if (range < MIN_RANGE_THRESHOLD) {
     return {
       found: false,
       confidence: 0,
@@ -135,8 +140,8 @@ export const analyzeBufferPattern = (
     // Pattern: face visible → up → gone → returns
     console.log("upwardMovement",upwardMovement);
     console.log("returnMovement",returnMovement);
-    if (upwardMovement > 19 
-      && returnMovement < 30
+    if (upwardMovement > MIN_UPWARD_MOVEMENT_THRESHOLD
+      && returnMovement < MAX_RETURN_MOVEMENT_THRESHOLD
     ) {
       confidence = Math.min(
         0.95,
@@ -165,7 +170,7 @@ export const analyzeBufferPattern = (
   // Validate against reference position
   if (referenceY !== null && confidence >= PATTERN_CONFIDENCE_THRESHOLD) {
     // Allow faster consecutive pushups
-    const returnToStart = Math.abs(currentY - referenceY) < 65; // Slightly increased tolerance
+    const returnToStart = Math.abs(currentY - referenceY) < RETURN_TO_START_TOLERANCE; // Slightly increased tolerance
     const sufficientTimePassed = currentTime - lastValidPushupTime > 150; // Reduced from 200ms to 150ms
 
     if (returnToStart && sufficientTimePassed) {

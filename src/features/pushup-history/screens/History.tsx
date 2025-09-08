@@ -13,6 +13,9 @@ import { format } from 'date-fns';
 import { useThemeColors } from 'shared/hooks/useThemeColors';
 import { styles } from 'pushup-history/styles/History';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
+import IonIcons from '@react-native-vector-icons/ionicons';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '@/shared/types';
 
 const History: React.FC = () => {
   const {
@@ -24,6 +27,8 @@ const History: React.FC = () => {
     deletePushupLog,
   } = useDatabase();
   const themeColors = useThemeColors();
+
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     refreshData();
@@ -39,7 +44,6 @@ const History: React.FC = () => {
   const formatDate = (dateString: string): string => {
     return format(new Date(dateString), 'MMM dd, yyyy');
   };
-
 
   const handleDeleteLog = async (id: number) => {
     Alert.alert(
@@ -59,6 +63,10 @@ const History: React.FC = () => {
     );
   };
 
+  const handleExitPress = () => {
+    navigation.navigate('PushupCounter', {});
+  };
+
   const renderLogItem = ({ item }: { item: PushupLog }) => (
     <View
       style={[
@@ -69,7 +77,10 @@ const History: React.FC = () => {
       <View style={styles.logContent}>
         <TouchableOpacity
           onPress={() => handleDeleteLog(item.id)}
-          style={[styles.deleteButton, { backgroundColor: themeColors.history.deleteIcon.backgroundColor }]}
+          style={[
+            styles.deleteButton,
+            { backgroundColor: themeColors.history.deleteIcon.backgroundColor },
+          ]}
         >
           <MaterialIcons
             name="delete-outline"
@@ -126,14 +137,30 @@ const History: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      <Text
-        style={[
-          styles.headerTitle,
-          { color: themeColors.history.text.primary },
-        ]}
-      >
-        Pushup History
-      </Text>
+      <View style={styles.headerTitleContainer}>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: themeColors.history.text.primary },
+          ]}
+        >
+          Pushup History
+        </Text>
+        <View style={styles.headerIconContainer}>
+          <IonIcons
+            name="exit-outline"
+            size={30}
+            onPress={handleExitPress}
+            color={themeColors.history.exitIcon.color}
+          />
+          <MaterialIcons
+            name="refresh"
+            size={30}
+            onPress={refreshData}
+            color={themeColors.history.refreshIcon.color}
+          />
+        </View>
+      </View>
 
       {databaseStats && (
         <View style={styles.statsGrid}>

@@ -52,6 +52,12 @@ export const colors = {
         color: '#D85E5E',
         backgroundColor: 'rgba(216, 94, 94, 0.2)',
       },
+      refreshIcon: {
+        color: '#0EAAD9',
+      },
+      exitIcon: {
+        color: '#C91E1E',
+      },
     },
     controlButtonContainer: {
       bgColor: '#000B25',
@@ -139,6 +145,12 @@ export const colors = {
       deleteIcon: {
         color: '#DC2626',
         backgroundColor: 'rgba(220, 38, 38, 0.2)',
+      },
+      refreshIcon: {
+        color: '#00C3FF',
+      },
+      exitIcon: {
+        color: '#FF0000',
       },
     },
     controlButtonContainer: {

@@ -81,7 +81,7 @@ export const useThemedStyles = () => {
       justifyContent: 'space-between',
       position: 'absolute',
       top: '50%',
-      left: '44%',
+      left: '48%',
       transform: [
         {
           translateX: '-50%',
