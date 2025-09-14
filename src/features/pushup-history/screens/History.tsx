@@ -342,7 +342,7 @@ const History: React.FC = () => {
             >
               <MaterialIcons name="emoji-events" size={24} color="#FF9800" />
             </View>
-            <Text style={[styles.statNumber, { color: '#FF9800' }]}>
+            <Text style={[styles.statNumber]}>
               {databaseStats.maxPushupCount}
             </Text>
             <Text
@@ -601,6 +601,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#FF9800',
   },
   statLabel: {
     fontSize: 11,
