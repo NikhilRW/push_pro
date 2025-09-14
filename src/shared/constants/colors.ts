@@ -1,6 +1,8 @@
 export const colors = {
   dark: {
     primary: '#FF9B0A', // Vibrant orange for energy
+    gradientStart: '#FF6600',
+    gradientEnd: '#FFB700',
     secondary: '#111827', // Deep navy for contrast and depth
     accent: '#FFCA28', // Bright yellow for highlights
     background: '#010716', // Dark background
@@ -95,6 +97,8 @@ export const colors = {
   },
   light: {
     primary: '#FF9B0A',
+    gradientStart: '#FF6600',
+    gradientEnd: '#FFB700',
     secondary: '#F8FAFC',
     accent: '#FFCA28',
     background: '#EAEAEA',

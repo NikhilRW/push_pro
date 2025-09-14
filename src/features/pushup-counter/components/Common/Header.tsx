@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import {
   Canvas,
@@ -17,7 +17,8 @@ import { useTheme } from '@/shared/context/ThemeContext';
 import AntDesign from '@react-native-vector-icons/ant-design';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/shared/types';
-import { headerStyles } from '../../styles/Header';
+import { createHeaderStyles } from '../../styles/Header';
+import { Lucide } from '@react-native-vector-icons/lucide';
 
 const BORDER_WIDTH = 1.1;
 
@@ -44,6 +45,12 @@ const Header = ({
 
   const handleHistoryPress = () => {
     navigation.navigate('History', {});
+  };
+
+  const headerStyles = createHeaderStyles(isDark);
+
+  const handleShowInstructions = () => {
+    navigation.navigate('Instructions', {});
   };
 
   return (
@@ -100,15 +107,24 @@ const Header = ({
           {newGetStateText(currentState)}
         </Text>
       </View>
-      <View style={headerStyles.historyButton}>
+      <TouchableOpacity style={[headerStyles.historyButton, {}]}>
         <AntDesign
           onPress={handleHistoryPress}
           name="history"
           size={17}
-          color={isDark ? '#00C5FC' : '#222'}
-          className="rounded-2xl dark:bg-blue-900 bg-blue-400"
+          color={isDark ? '#00C5FC' : '#fff'}
+          className="rounded-2xl dark:bg-blue-900 bg-blue-200"
         />
-      </View>
+      </TouchableOpacity>
+      <TouchableOpacity style={[headerStyles.instructionsButton, {}]}>
+        <Lucide
+          onPress={handleShowInstructions}
+          name="clipboard-pen-line"
+          size={17}
+          color={isDark ? '#00C5FC' : '#fff'}
+          className="rounded-2xl dark:bg-blue-900 bg-blue-200"
+        />
+      </TouchableOpacity>
     </View>
   );
 };

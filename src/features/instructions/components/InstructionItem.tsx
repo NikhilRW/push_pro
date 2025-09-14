@@ -25,6 +25,7 @@ const InstructionItem = ({
       alignItems: 'center',
       gap: 12,
       opacity: noOfInstructionShown - 1 >= instructionNumber ? 1 : 0,
+      height: 'auto',
     };
   });
   return (

@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     borderRadius: 20,
-    padding: 20,
+    padding: 15,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -44,22 +44,23 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   instructionsContainer: {
-    height: '23%',
     gap: 12,
+    paddingBottom: 20,
   },
   instructionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginBottom: 12,
+    fontWeight: '400',
   },
 
   number: {
-    fontSize: 12,
+    fontSize: 13.5,
     fontWeight: '900',
   },
   instructionText: {
-    fontSize: 12,
+    fontSize: 13.5,
     flex: 1,
   },
   stepNavigationIcon: {

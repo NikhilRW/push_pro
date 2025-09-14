@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { colors } from 'shared/constants/colors';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from 'shared/types/Navigation';
-import Animated, { LinearTransition } from 'react-native-reanimated';
+import Animated, { CurvedTransition, LinearTransition } from 'react-native-reanimated';
 import { instructionMessages } from 'instructions/constants/instructions-steps';
 import { styles } from 'instructions/styles/Instructions';
 import InstructionItem from 'instructions/components/InstructionItem';
@@ -57,6 +57,7 @@ const Instructions = () => {
             shadowColor: theme.shadow.default,
           },
         ]}
+        layout={CurvedTransition}
       >
         <View style={styles.imageContainer}>
           <Video
@@ -104,7 +105,7 @@ const Instructions = () => {
         }}
         className="bg-[#ff9900] rounded-xl mx-auto gap-1 items-center justify-center mt-10 px-5 py-4 text-center"
       >
-        <Text className="font-semibold text-white">
+        <Text className="font-semibold text-lg text-white">
           {noOfInstructionShown !== instructionMessages.length
             ? 'Next Step'
             : 'Start Counting'}
