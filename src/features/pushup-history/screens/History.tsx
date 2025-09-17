@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback, JSX } from 'react';
 import {
   View,
   Text,
@@ -19,9 +19,7 @@ import IonIcons from '@react-native-vector-icons/ionicons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/shared/types';
 
-// const { width } = Dimensions.get('window');
-
-const History: React.FC = () => {
+const History: React.FC<Record<string, never>> = (): JSX.Element => {
   const {
     pushupLogs,
     databaseStats,
@@ -54,16 +52,16 @@ const History: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const formatDuration = (seconds: number): string => {
+  const formatDuration = useCallback((seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     if (minutes > 0) {
       return `${minutes}m ${remainingSeconds}s`;
     }
     return `${remainingSeconds}s`;
-  };
+  }, []);
 
-  const formatDate = (dateString: string): string => {
+  const formatDate = useCallback((dateString: string): string => {
     const date = new Date(dateString);
     const today = new Date();
     const yesterday = new Date(today);
@@ -75,7 +73,7 @@ const History: React.FC = () => {
       return 'Yesterday';
     }
     return format(date, 'MMM dd');
-  };
+  }, []);
 
   const getProgressColor = (count: number, maxCount: number) => {
     const percentage = (count / maxCount) * 100;
@@ -94,141 +92,157 @@ const History: React.FC = () => {
     return '🌱 Getting started!';
   };
 
-  const handleDeleteLog = async (id: number) => {
-    Alert.alert(
-      'Delete This Workout? 🗑️',
-      'This will permanently remove this workout from your history.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await deletePushupLog(id);
-            refreshData();
+  const handleDeleteLog = useCallback(
+    async (id: number) => {
+      Alert.alert(
+        'Delete This Workout? 🗑️',
+        'This will permanently remove this workout from your history.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              await deletePushupLog(id);
+              refreshData();
+            },
           },
-        },
-      ],
-    );
-  };
+        ],
+      );
+    },
+    [deletePushupLog, refreshData],
+  );
 
   const handleExitPress = () => {
     navigation.navigate('PushupCounter', {});
   };
 
-  const renderLogItem = ({ item }: { item: PushupLog; index: number }) => {
-    const progressColor = getProgressColor(
-      item.pushup_count,
-      databaseStats?.maxPushupCount || item.pushup_count,
-    );
-    const motivationalMsg = getMotivationalMessage(
-      item.pushup_count,
-      databaseStats?.maxPushupCount || item.pushup_count,
-    );
+  const renderLogItem = useCallback(
+    ({ item }: { item: PushupLog; index: number }) => {
+      const progressColor = getProgressColor(
+        item.pushup_count,
+        databaseStats?.maxPushupCount || item.pushup_count,
+      );
+      const motivationalMsg = getMotivationalMessage(
+        item.pushup_count,
+        databaseStats?.maxPushupCount || item.pushup_count,
+      );
 
-    return (
-      <Animated.View
-        style={[
-          styles.logItemContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-      >
-        <View
+      return (
+        <Animated.View
           style={[
-            styles.logItem,
+            styles.logItemContainer,
             {
-              backgroundColor: themeColors.history.cardBackground,
-              borderLeftColor: progressColor,
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
             },
           ]}
+          accessible={true}
+          accessibilityLabel={`Workout from ${formatDate(item.date)}. ${item.pushup_count} pushups completed in ${formatDuration(item.duration)}`}
         >
-          {/* Header with date and delete */}
-          <View style={styles.cardHeader}>
-            <View style={styles.dateContainer}>
-              <Text
-                style={[
-                  styles.dateText,
-                  { color: themeColors.history.text.primary },
-                ]}
-              >
-                {formatDate(item.date)}
-              </Text>
-              <Text style={[styles.motivationText, { color: progressColor }]}>
-                {motivationalMsg}
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => handleDeleteLog(item.id)}
-              style={[
-                styles.deleteButton,
-                { backgroundColor: themeColors.history.cardBackground },
-              ]}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <MaterialIcons
-                name="delete-outline"
-                color={themeColors.history.text.secondary}
-                size={20}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Progress Circle */}
-          <View style={styles.progressContainer}>
-            <View
-              style={[
-                styles.progressCircle,
-                { borderColor: progressColor + '30' },
-              ]}
-            >
-              <View
-                style={[
-                  styles.progressInner,
-                  { backgroundColor: progressColor + '15' },
-                ]}
-              >
-                <Text style={[styles.pushupCount, { color: progressColor }]}>
-                  {item.pushup_count}
-                </Text>
+          <View
+            style={[
+              styles.logItem,
+              {
+                backgroundColor: themeColors.history.cardBackground,
+                borderLeftColor: progressColor,
+              },
+            ]}
+          >
+            <View style={styles.cardHeader}>
+              <View style={styles.dateContainer}>
                 <Text
                   style={[
-                    styles.pushupLabel,
-                    { color: themeColors.history.text.secondary },
+                    styles.dateText,
+                    { color: themeColors.history.text.primary },
                   ]}
                 >
-                  push-ups
+                  {formatDate(item.date)}
+                </Text>
+                <Text style={[styles.motivationText, { color: progressColor }]}>
+                  {motivationalMsg}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleDeleteLog(item.id)}
+                style={[
+                  styles.deleteButton,
+                  { backgroundColor: themeColors.history.deleteIcon.backgroundColor },
+                ]}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessible={true}
+                accessibilityLabel="Delete workout"
+                accessibilityRole="button"
+              >
+                <MaterialIcons
+                  name="delete-outline"
+                  color={themeColors.history.deleteIcon.color}
+                  size={20}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.progressContainer}>
+              <View
+                style={[
+                  styles.progressCircle,
+                  { borderColor: progressColor + '30' },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.progressInner,
+                    { backgroundColor: progressColor + '15' },
+                  ]}
+                >
+                  <Text style={[styles.pushupCount, { color: progressColor }]}>
+                    {item.pushup_count}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.pushupLabel,
+                      { color: themeColors.history.text.secondary },
+                    ]}
+                  >
+                    push-ups
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.durationContainer}>
+              <View
+                style={[
+                  styles.durationBadge,
+                  { backgroundColor: themeColors.primary + '15' },
+                ]}
+              >
+                <MaterialIcons
+                  name="timer"
+                  size={14}
+                  color={themeColors.primary}
+                />
+                <Text
+                  style={[styles.durationText, { color: themeColors.primary }]}
+                >
+                  {formatDuration(item.duration)}
                 </Text>
               </View>
             </View>
           </View>
-
-          {/* Duration with icon */}
-          <View style={styles.durationContainer}>
-            <View
-              style={[
-                styles.durationBadge,
-                { backgroundColor: themeColors.primary + '15' },
-              ]}
-            >
-              <MaterialIcons
-                name="timer"
-                size={14}
-                color={themeColors.primary}
-              />
-              <Text
-                style={[styles.durationText, { color: themeColors.primary }]}
-              >
-                {formatDuration(item.duration)}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Animated.View>
-    );
-  };
+        </Animated.View>
+      );
+    },
+    [
+      databaseStats,
+      themeColors,
+      fadeAnim,
+      slideAnim,
+      formatDate,
+      formatDuration,
+      handleDeleteLog,
+    ],
+  );
 
   const renderHeader = () => (
     <Animated.View
@@ -248,11 +262,23 @@ const History: React.FC = () => {
         style={styles.gradientHeader}
       >
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={handleExitPress} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={handleExitPress}
+            style={styles.backButton}
+            accessible={true}
+            accessibilityLabel="Go back to workout screen"
+            accessibilityRole="button"
+          >
             <IonIcons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Fitness Journey 🚀</Text>
-          <TouchableOpacity onPress={refreshData} style={styles.refreshButton}>
+          <TouchableOpacity
+            onPress={refreshData}
+            style={styles.refreshButton}
+            accessible={true}
+            accessibilityLabel="Refresh workout history"
+            accessibilityRole="button"
+          >
             <MaterialIcons name="refresh" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -491,10 +517,18 @@ const History: React.FC = () => {
             onRefresh={refreshData}
             colors={[themeColors.primary]}
             tintColor={themeColors.primary}
+            accessibilityLabel="Pull to refresh workout history"
+            accessibilityHint="Pull down to reload your workout history"
           />
         }
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        accessible={true}
+        accessibilityLabel="Workout history list"
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={10}
       />
     </View>
   );
@@ -503,6 +537,12 @@ const History: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
   },
   listContainer: {
     paddingBottom: 30,

@@ -107,18 +107,22 @@ const Header = ({
           {newGetStateText(currentState)}
         </Text>
       </View>
-      <TouchableOpacity style={[headerStyles.historyButton, {}]}>
+      <TouchableOpacity
+        onPress={handleHistoryPress}
+        style={[headerStyles.historyButton, {}]}
+      >
         <AntDesign
-          onPress={handleHistoryPress}
           name="history"
           size={17}
           color={isDark ? '#00C5FC' : '#fff'}
           className="rounded-2xl dark:bg-blue-900 bg-blue-200"
         />
       </TouchableOpacity>
-      <TouchableOpacity style={[headerStyles.instructionsButton, {}]}>
+      <TouchableOpacity
+        onPress={handleShowInstructions}
+        style={[headerStyles.instructionsButton, {}]}
+      >
         <Lucide
-          onPress={handleShowInstructions}
           name="clipboard-pen-line"
           size={17}
           color={isDark ? '#00C5FC' : '#fff'}

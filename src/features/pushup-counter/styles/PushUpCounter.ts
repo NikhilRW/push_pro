@@ -80,8 +80,8 @@ export const useThemedStyles = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
       position: 'absolute',
-      top: '50%',
-      left: '48%',
+      top: '46%',
+      left: '49%',
       transform: [
         {
           translateX: '-50%',
@@ -98,6 +98,7 @@ export const useThemedStyles = () => {
       borderRadius: 12,
       marginRight: 8,
       elevation: 12,
+      marginTop: 3,
     },
     stateText: {
       color: '#9CA3AF',
