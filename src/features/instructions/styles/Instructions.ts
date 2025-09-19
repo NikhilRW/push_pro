@@ -1,17 +1,14 @@
 import { Dimensions, StyleSheet } from 'react-native';
-import { colors } from 'shared/constants/colors';
 
 export const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
     flex: 1,
     padding: 16,
-    backgroundColor: colors.dark.background,
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
   },
   card: {
-    // flex: 1,
+    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     borderRadius: 20,
@@ -30,22 +27,12 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 20,
   },
-  video: {
-    width: '100%',
-    height: '100%',
-  },
-  contentContainer: {},
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-  },
-  instructionsContainer: {
-    gap: 12,
-    paddingBottom: 20,
   },
   instructionItem: {
     flexDirection: 'row',
@@ -54,7 +41,6 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: '400',
   },
-
   number: {
     fontSize: 13.5,
     fontWeight: '900',
@@ -65,5 +51,151 @@ export const styles = StyleSheet.create({
   },
   stepNavigationIcon: {
     paddingTop: 2.5,
+  },
+  // New styles extracted from inline styles
+  scrollViewContainer: {
+    flexGrow: 1,
+    paddingBottom: 40,
+    minHeight: Dimensions.get('window').height,
+    paddingTop: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  progressBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  progressBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  progressBarContainer: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#ff9900',
+    borderRadius: 3,
+  },
+  mainCard: {
+    marginHorizontal: 20,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  videoContainer: {
+    height: Dimensions.get('window').height * 0.25,
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
+  },
+  video: {
+    width: '100%',
+    height: '100%',
+  },
+  videoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  playButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contentContainer: {
+    padding: 24,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 0,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 22,
+    lineHeight: 22,
+  },
+  instructionsContainer: {
+    gap: 10,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    paddingBottom: 40,
+  },
+  primaryButton: {
+    backgroundColor: '#ff9900',
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff9900',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+    gap: 8,
+  },
+  primaryButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+  },
+  skipButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  skipButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
