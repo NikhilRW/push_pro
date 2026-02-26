@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/shared/res/pngs/pushpro.png" style="border-radius:16px" alt="Push Pro Logo" width="180"/>
+<img src="src/shared/res/pngs/pushpro.png" alt="Push Pro Logo" width="180"/>
 
 # Push Pro
 
