@@ -30,7 +30,7 @@
 
 ---
 
-## 📸 Showcase
+## 📸 Use-case
 
 <div align="center">
 
