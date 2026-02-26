@@ -15,10 +15,9 @@ const RootStack = ({ isLimitPassed }: { isLimitPassed: boolean }) => {
   return (
     <Stack.Navigator
       initialRouteName={
-        // parseInt(Platform.Version.toString(), 10) >= 31
-        //   ? screenAfterSplashScreen
-        //   : 'Splash'
-        'Instructions'
+        parseInt(Platform.Version.toString(), 10) >= 31
+          ? screenAfterSplashScreen
+          : 'Splash'
       }
       screenOptions={{ animation: 'fade', headerShown: false }}
     >

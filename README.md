@@ -1,157 +1,100 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+<div align="center">
 
-# Getting Started
+<img src="src/shared/res/pngs/pushpro.png" style="border-radius:16px" alt="Push Pro Logo" width="180"/>
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+# Push Pro
 
-## Step 1: Start Metro
+**Automatic push-up counter for Android & iOS**
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+[![React Native](https://img.shields.io/badge/React%20Native-0.80-61DAFB?logo=react&logoColor=white)](https://reactnative.dev)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-lightgrey)](#)
+[![License](https://img.shields.io/badge/license-MIT-orange)](#)
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+**[🌐 View Showcase Website](https://push-pro-web.vercel.app)**
+
+</div>
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 📷 **Auto Rep Counting** | Just drop your phone, get in position, and it counts for you — no buttons, no interruptions |
+| 📊 **Workout History** | Every session is saved so you can look back, see how far you've come, and keep pushing |
+| 🔊 **Voice Feedback** | Hear your rep count called out loud — no need to glance at the screen mid-set |
+| 🎵 **Audio Cues** | A satisfying sound on every rep, with volume you can dial in however you like |
+| 💬 **Motivational Coach** | When it gets hard, the app gets louder — 60+ no-nonsense messages to push you through |
+| 🌙 **Dark / Light Mode** | Looks great day or night, with a bold orange theme that matches the grind |
+| 📳 **Haptic Feedback** | A quick buzz on each rep so your phone feels as locked in as you are |
+
+---
+
+## 📸 Showcase
+
+<div align="center">
+
+<img src="src/shared/res/pngs/doingpushup.png" alt="App Screenshot" width="220"/>
+&nbsp;&nbsp;
+<img src="src/shared/res/pngs/doingpushup2.png" alt="App Screenshot 2" width="220"/>
+
+</div>
+
+---
+
+## 🛠️ Tech Stack
+
+- **React Native 0.80** + TypeScript
+- **Vision Camera v4** — frame-by-frame camera processing
+- **Worklets Core** — off-thread frame processing for zero-lag counting
+- **NativeWind** (Tailwind CSS) — utility-first styling
+- **React Navigation** — stack + bottom tabs
+- **SQLite** — local persistent workout history
+- **React Native TTS + Sound** — voice & audio feedback
+- **Skia** — smooth animated visuals
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [React Native environment set up](https://reactnative.dev/docs/set-up-your-environment)
+- Node.js ≥ 18, Ruby (for iOS)
+
+### Install
 
 ```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+git clone https://github.com/NikhilRW/push_pro.git
+cd push_pro
+npm install
 ```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
 
 ### Android
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
 ### iOS
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## 📖 How to Use
 
-## Step 3: Modify your app
+1. Place your phone on a flat surface, front camera facing you.
+2. Align yourself so **both hands and your face** are visible.
+3. Hit **▶ Play** — the app starts counting automatically.
+4. Your rep count is announced aloud after each push-up.
+5. Check **History** to review all past sessions.
 
-Now that you have successfully run the app, let's make changes!
+---
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 📄 License
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-{
-  "name": "push_pro",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "lint": "eslint .",
-    "start": "react-native start",
-    "test": "jest"
-  },
-  "dependencies": {
-    "@react-native-vector-icons/fontawesome": "^12.3.0",
-    "@react-native-vector-icons/fontawesome5": "^12.2.0",
-    "@react-native-vector-icons/fontawesome6": "^12.2.0",
-    "@react-native-vector-icons/fontisto": "^12.3.0",
-    "@react-native-vector-icons/foundation": "^12.3.0",
-    "nativewind": "^4.1.23",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14",
-    "react": "19.1.0",
-    "react-native": "0.80.0",
-    "react-native-fs": "^2.20.0",
-    "react-native-haptic-feedback": "^2.3.3",
-    "react-native-linear-gradient": "^2.8.3",
-    "react-native-reanimated": "3.18.0",
-    "react-native-safe-area-context": "^5.5.2",
-    "react-native-sound": "^0.12.0",
-    "react-native-tts": "^4.1.1",
-    "react-native-vision-camera": "4.7.1",
-    "react-native-vision-camera-face-detector": "^1.8.6",
-    "react-native-worklets-core": "^1.6.0",
-    "tailwindcss": "^3.4.17",
-    "react-native-gesture-handler": "2.27.1",
-    "to-words": "^4.7.0",
-    "@shopify/react-native-skia": "2.1.1"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.25.3",
-    "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "19.1.1",
-    "@react-native-community/cli-platform-android": "19.1.1",
-    "@react-native-community/cli-platform-ios": "19.1.1",
-    "@react-native/babel-preset": "0.80.2",
-    "@react-native/eslint-config": "0.80.2",
-    "@react-native/metro-config": "0.80.2",
-    "@react-native/typescript-config": "0.80.2",
-    "@types/jest": "^29.5.13",
-    "@types/react": "^19.1.0",
-    "@types/react-test-renderer": "^19.1.0",
-    "eslint": "^8.19.0",
-    "jest": "^29.6.3",
-    "react-native-dotenv": "3.4.11",
-    "react-test-renderer": "19.1.0",
-    "typescript": "5.0.4"
-  },
-  "engines": {
-    "node": ">=18"
-  }
+MIT © [NikhilRW](https://github.com/NikhilRW)

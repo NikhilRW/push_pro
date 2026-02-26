@@ -87,7 +87,7 @@ const Instructions = () => {
     progressWidth.value = withTiming((1 / instructionMessages.length) * 100, {
       duration: 500,
     });
-  }, []);
+  }, [progressWidth]);
 
   // Animated styles
   const animatedButtonStyle = useAnimatedStyle(() => ({
